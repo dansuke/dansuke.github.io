@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Image of a Famous Architect as a Whole as it Appears in Academic Discourse</title>
+  <link rel="stylesheet" href="research01.css">
+</head>
+<body>
+
+  <nav class="site-nav">
+    <a href="index.html">3DGS Tree Placement</a>
+    <a href="research01.html" class="nav-current">Architect Image &amp; Text Mining</a>
+  </nav>
+
+  <header class="hero">
+    <div class="hero-inner">
+      <h1>The Image of a Famous Architect as a Whole as it Appears in Academic Discourse</h1>
+      <p class="hero-subtitle">Comparison of conceptual diversity and interpretation using text mining</p>
+      <p class="hero-meta">Kotaro Ono, Nao Tanikawa, and Satoshi Yamada</p>
+      <p class="hero-venue">CAADRIA 2025, Volume 1, pp. 561&ndash;570</p>
+      <div class="hero-keywords">
+        <span class="keyword">Word2Vec</span>
+        <span class="keyword">Text Mining</span>
+        <span class="keyword">Polysemy of Words</span>
+        <span class="keyword">Architectural Representation</span>
+        <span class="keyword">Semantic Analysis</span>
+        <span class="keyword">Public Perception</span>
+      </div>
+    </div>
+  </header>
+
+  <nav class="toc">
+    <div class="toc-inner">
+      <h2>Contents</h2>
+      <ol>
+        <li><a href="#abstract">Abstract</a></li>
+        <li><a href="#introduction">Introduction</a></li>
+        <li><a href="#overview">Research Overview</a></li>
+        <li><a href="#results">Results</a></li>
+        <li><a href="#discussion">Discussion</a></li>
+        <li><a href="#conclusion">Conclusion</a></li>
+        <li><a href="#references">References</a></li>
+        <li><a href="#figures">List of Figures</a></li>
+      </ol>
+    </div>
+  </nav>
+
+  <main class="content">
+
+    <!-- Abstract -->
+    <section id="abstract" class="section">
+      <h2>Abstract</h2>
+      <div class="abstract-box">
+        <p>This paper proposes a novel approach that leverages artificial intelligence to quantitatively analyse the &lsquo;image of the architect&rsquo; as it appears in academic discourse. This method employs neural networks to examine linguistic expressions associated with architects and their works within a socio-cultural context.</p>
+        <p>Using Word2Vec, a natural language processing technique, we investigated word-usage patterns related to Pritzker Prize laureates and influential modern architects, including Le Corbusier, Mies van der Rohe, and Frank Lloyd Wright. By employing the skip-gram model in Word2Vec, the semantic relationships between the linguistic expressions associated with different architects were identified, providing insights into their perceptions in academic texts.</p>
+        <p>A vocabulary-trend analysis revealed commonalities and differences in their perceptions, highlighting the unique perspectives of each architect and their associated keywords. Furthermore, a cluster analysis was employed to visualise the distinct associations between their architectural approaches, philosophies, and particular terms, facilitating a deeper understanding of the relationship between language and architecture.</p>
+      </div>
+    </section>
+
+    <!-- 1. Introduction -->
+    <section id="introduction" class="section">
+      <h2><span class="section-num">1.</span> Introduction</h2>
+
+      <section class="subsection">
+        <h3>1.1. Words in Architecture</h3>
+        <p>This study focuses on two main aspects. The first is the crucial role of &lsquo;words&rsquo; in architecture. They are indispensable for shaping and comprehending architectural concepts. Investigations of literature and historical materials have revealed that the vocabulary associated with modernist architecture has evolved over time and is subject to diverse interpretations by architects. Numerous studies have qualitatively examined architectural language to understand the theories and philosophies of architects.</p>
+        <p>Research has demonstrated the potential to understand how architects consider different factors and develop unique design processes through their language. Although these findings are valuable, they often lack objectivity. To address this issue, recent advancements in quantitative word-analysis techniques, such as text mining, have gained prominence. Although various studies have actively employed these techniques in other fields, their application in the field of architecture is limited.</p>
+      </section>
+
+      <section class="subsection">
+        <h3>1.2. Reception of Architects by Non-Architects</h3>
+        <p>The second focus of this study is &lsquo;the reception of architects by non-architects&rsquo;. A discrepancy often exists between the intentions of architects when designing buildings and the impressions derived by non-architects from them. Architects are sensitive to subtle design differences and highly value originality, whereas non-architects tend to perceive designs more simplistically.</p>
+        <p>Considering that architecture encompasses not only creativity but also public and social dimensions, understanding how non-architects perceive and interpret architecture is crucial.</p>
+      </section>
+
+      <section class="subsection">
+        <h3>1.3. Related Work</h3>
+        <p>A study that focuses on both &lsquo;words&rsquo; and &lsquo;architectural images as accepted by non-architects&rsquo; is &lsquo;The Reception History of John Ruskin&rsquo;. This study qualitatively examines how John Ruskin was historically received in America, not through Ruskin&rsquo;s own discourse but through extensive third-party discussions. Considering the publicness and sociality of architecture, this highlights the importance of understanding how people perceive architecture.</p>
+      </section>
+
+      <section class="subsection">
+        <h3>1.4. Research Objectives</h3>
+        <p>To address the aforementioned gaps, we first collected extensive language expressions related to architectural images through Web scraping. Next, instead of relying on simple word frequencies or co-occurrence probabilities, we employed deep-learning-based text mining, which considers context, to analyse the word similarities for each architect. This approach allowed us to identify words with high similarity to a representative &lsquo;word&rsquo; as a concept, which was then interpreted as a factor influencing that word.</p>
+        <p>For example, consider the word &lsquo;building&rsquo;. The concept of &lsquo;building&rsquo; within an architectural image is subjective and varies among architects. In one architectural image, the primary factor associated with &lsquo;building&rsquo; might be &lsquo;form&rsquo;, whereas in another, it could be &lsquo;materials/structure/thought&rsquo;, among others. This study presents the composition of such concepts for each architect and a representative concept.</p>
+      </section>
+    </section>
+
+    <!-- 2. Research Overview -->
+    <section id="overview" class="section">
+      <h2><span class="section-num">2.</span> Research Overview</h2>
+
+      <section class="subsection">
+        <h3>2.1. Research Flow</h3>
+        <figure id="fig1" class="figure figure-wide">
+          <img src="image/research01/fig_p4_1.jpeg" alt="Target architects/architectural groups and research flow" loading="lazy">
+          <figcaption><a href="#fig1">Figure 1.</a> Target architects/architectural groups and research flow</figcaption>
+        </figure>
+        <p>This study followed a structured process, including the collection of texts related to Pritzker Prize laureates (2012&ndash;2021) and modern architectural masters, preprocessing the data, training Word2Vec models, and analysing word similarities. Key trends and unique features were visualized using clustering techniques and diagrams to uncover linguistic patterns in academic discourse.</p>
+      </section>
+
+      <section class="subsection">
+        <h3>2.2. Dataset</h3>
+        <p>Clarivate&rsquo;s ProQuest platform, which is one of the largest and most reliable academic information databases, was used to create the text dataset. ProQuest provides access to various sources, including academic journals, newspaper articles, dissertations, books, and reports, allowing comprehensive cross-referencing of 13 databases. The search was conducted using the architect&rsquo;s name along with the term &lsquo;architect&rsquo;, and only articles in English with full-text access were selected. Each dataset comprised 18,000&ndash;22,000 words per architect, thereby providing a robust foundation for text analysis.</p>
+      </section>
+
+      <section class="subsection">
+        <h3>2.3. Model and Learning Conditions</h3>
+        <p>Word2Vec uses neural networks to represent words as real-valued vectors (i.e., word embeddings). By obtaining distributed word representations, it enables the quantification and exploration of similarities between words. In this study, the skip-gram method was used to predict the words surrounding the target word. Skip-gram is particularly effective in capturing rare-word associations. The vector dimensions were set to 100, window size was set to 3, and number of training iterations was set to 500. A separate Word2Vec model was created for each architect.</p>
+      </section>
+
+      <section class="subsection">
+        <h3>2.4. Selection of Substituted Words</h3>
+        <figure id="fig2" class="figure">
+          <img src="image/research01/fig_p5_1.png" alt="Word Cloud and Top 20 Most Frequent Words in the Dataset" loading="lazy">
+          <figcaption><a href="#fig2">Figure 2.</a> Word Cloud and Top 20 Most Frequent Words in the Dataset. The architectural terms are highlighted in yellow</figcaption>
+        </figure>
+        <p>The trained model output similarities with other words in the text by substituting specific words. For these substituted words, we selected ten words representing concepts related to architecture from among the top 20 most frequent words in the dataset: building, architecture, architect, work, design, space, project, house, city, and structure.</p>
+      </section>
+
+      <section class="subsection">
+        <h3>2.5. Output Processing</h3>
+        <p>The similarity between the substituted words was output as a cosine similarity and the values were normalised to a range of 0&ndash;1. To conduct a comprehensive analysis of word similarities across different architects and terms, it was necessary to standardise the range of values across all patterns. The moving average was calculated at 10-word intervals based on the difference in similarity rankings of up to 100 words, and the similarity threshold was set at a point immediately before the moving average fell below the median value.</p>
+      </section>
+
+      <section class="subsection">
+        <h3>2.6. Interpretation of the Results</h3>
+        <p>The output for each substituted word was interpreted as representing the &lsquo;image of the architect as seen from the perspective of the words&rsquo; by people. Additionally, the proportion of words within the effective range for each architect was considered to represent the elements that constituted their image. By comparing the results for each word across different architects, we could discern the trends of how each architect was perceived from different perspectives.</p>
+      </section>
+    </section>
+
+    <!-- 3. Results -->
+    <section id="results" class="section">
+      <h2><span class="section-num">3.</span> Results</h2>
+
+      <section class="subsection">
+        <h3>3.1. Model Training and Convergence</h3>
+        <figure id="fig3" class="figure">
+          <img src="image/research01/fig_p6_1.png" alt="Training progression of the Word2Vec model (Ito)" loading="lazy">
+          <figcaption><a href="#fig3">Figure 3.</a> Training progression of the Word2Vec model (Ito)</figcaption>
+        </figure>
+        <p>The training of all Word2Vec models converged successfully, indicating that the models effectively captured the semantic relationships within the text data specific to each architect&rsquo;s body of work. Using the trained models, we explored similar words for each of the ten representative terms to investigate the nuanced language associated with each architect.</p>
+      </section>
+
+      <section class="subsection">
+        <h3>3.2. Determining the Effective Range of Similar Words</h3>
+        <figure id="fig4" class="figure">
+          <img src="image/research01/fig_p6_2.png" alt="Results of exploring the effective range of similar words for Architecture in Le Corbusier's context" loading="lazy">
+          <figcaption><a href="#fig4">Figure 4.</a> Results of exploring the effective range of similar words for &lsquo;Architecture&rsquo; in Le Corbusier&rsquo;s context</figcaption>
+        </figure>
+        <p>After extracting the similar words for each term, we investigated the effective range of similarities to determine an appropriate threshold for selecting meaningful words. The graph shows that the similarity scores decreased as the ranks of similar words increased. The high average number of similar words for &lsquo;architect&rsquo; suggests a diverse perception of architects associated with this term, encompassing various perspectives and contexts.</p>
+      </section>
+
+      <section class="subsection">
+        <h3>3.3. Analysis of Effective Similar Words</h3>
+        <figure id="fig5" class="figure figure-wide">
+          <img src="image/research01/fig_p7_1.png" alt="Effective similar word counts and statistical results for key architectural terms" loading="lazy">
+          <figcaption><a href="#fig5">Figure 5.</a> Effective similar word counts and statistical results (maximum, minimum, standard deviation, average) for key architectural terms</figcaption>
+        </figure>
+        <p>The maximum number of effective similar words was 54, found in Shigeru Ban&rsquo;s &lsquo;work&rsquo; from 2014 and Balkrishna Doshi&rsquo;s &lsquo;structure&rsquo; from 2018. The minimum was 0, observed in Frei Otto&rsquo;s &lsquo;house&rsquo; from 2015, indicating that the term &lsquo;house&rsquo; did not appear in his dataset.</p>
+        <p>Words like &lsquo;house&rsquo; and &lsquo;structure&rsquo; exhibited large variations in the number of effective similar words across different architects. By contrast, terms such as &lsquo;city&rsquo;, &lsquo;building&rsquo;, and &lsquo;project&rsquo; showed smaller variations, indicating more consistent usage across different architects.</p>
+      </section>
+
+      <section class="subsection">
+        <h3>3.4. Analysis of Common Words</h3>
+        <figure id="fig6" class="figure figure-wide">
+          <img src="image/research01/fig_p7_2.jpeg" alt="Target architects/architectural groups and synonym treemap of architects forming independent clusters" loading="lazy">
+          <figcaption><a href="#fig6">Figure 6.</a> Top: Target architects/architectural groups and numbers of collected words. Bottom: Synonym treemap of architects forming independent clusters by search term</figcaption>
+        </figure>
+        <p>To further understand these trends, clustering was performed on each architectural model trained using Word2Vec. Using the 42 common words across all models and their cosine similarities with the ten search terms as feature values, we applied k-means clustering (with three clusters) after normalisation. This approach allowed us to group architects based on linguistic similarities and to identify patterns in how they are discussed in academic discourse.</p>
+
+        <figure id="fig7" class="figure">
+          <img src="image/research01/fig_p8_1.png" alt="Dendrogram and treemap results of common words associated with Wang and Isozaki's design" loading="lazy">
+          <figcaption><a href="#fig7">Figure 7.</a> Dendrogram and treemap results of common words associated with Wang and Isozaki&rsquo;s &lsquo;design&rsquo;</figcaption>
+        </figure>
+        <p>Differences were observed between architects who frequently appeared in the same clusters and those who did not. For instance, pairs such as Ito and Ban, Doshi and Grafton, and Doshi and Mies were consistently classified together, whereas Wang and Isozaki appeared together only once. Even when the same words appeared as similar terms to &lsquo;design&rsquo;, the degree of association differed between the two architects.</p>
+      </section>
+    </section>
+
+    <!-- 4. Discussion -->
+    <section id="discussion" class="section">
+      <h2><span class="section-num">4.</span> Discussion</h2>
+      <p>The analysis of effective similar words revealed that certain architectural concepts are interpreted differently by various architects. The significant variations in the number of similar words for terms such as &ldquo;house&rdquo; and &ldquo;structure&rdquo; indicate that these concepts hold different levels of importance or are associated with different ideas in each architect&rsquo;s work. For instance, Frei Otto&rsquo;s focused use of &ldquo;structure&rdquo; aligns with his specialisation in lightweight structures, whereas Balkrishna Doshi&rsquo;s broader interpretation suggests a more diverse application of the concept in his work.</p>
+      <p>The consistent usage of terms such as &ldquo;city,&rdquo; &ldquo;building,&rdquo; and &ldquo;project&rdquo; by different architects underscores their fundamental role in architectural discourse. These concepts appear to be universally significant, reflecting common themes and concerns within the field.</p>
+      <p>The clustering analysis of common words further highlighted how architects can be grouped based on linguistic similarities. The formation of clusters among certain architects suggests shared perspectives or thematic overlaps in their works. The contrast in the treemaps of Wang and Isozaki&rsquo;s &ldquo;design&rdquo; demonstrates how cultural context and individual philosophy influence the associations with key architectural terms.</p>
+      <p>These findings contribute to a deeper understanding of the diverse ways in which architects are discussed and perceived, highlighting the importance of considering external perspectives in architectural analysis. Future research could expand this approach by incorporating a broader range of data sources and exploring additional linguistic and cultural factors that influence the perception of architects and their work.</p>
+    </section>
+
+    <!-- 5. Conclusion -->
+    <section id="conclusion" class="section">
+      <h2><span class="section-num">5.</span> Conclusion</h2>
+      <p>In this study, we employed text-mining techniques to quantitatively analyse the image of architects in academic discourse to clarify the diversity of linguistic expressions and the interpretive differences associated with each architect. Specifically, we analysed the vocabulary similarities using Word2Vec, focusing on Pritzker Prize laureates and modern architectural masters such as Le Corbusier, Mies van der Rohe, and Frank Lloyd Wright. The results confirmed that each architect emphasises different concepts, leading to unique portrayals in academic texts.</p>
+      <p>Furthermore, by applying k-means clustering to the cosine similarity values of shared words, we identified patterns in the classification of architects in relation to each search term. This clustering revealed how specific keywords are associated with each architect, highlighting their unique perspectives and approaches.</p>
+      <p>A quantitative approach using Word2Vec and clustering techniques was introduced in this study, in place of traditional qualitative analyses, providing a new perspective for evaluating architectural images based on a wide range of text data. Future research should focus on enhancing the data quality by expanding the range of information sources and refining the model to account for finer linguistic nuances and contextual variations.</p>
+    </section>
+
+    <!-- References -->
+    <section id="references" class="section">
+      <h2>References</h2>
+      <ol class="references-list">
+        <li>Bianco, L. (2018). Architecture, values and perception: Between rhetoric and reality. <em>Frontiers of Architectural Research</em>, 7(1), 92&ndash;99.</li>
+        <li>Cai, C., Wang, X., Li, B. &amp; Herthogs, P. (2024). ArchiSearch: A Text-image Integrated Case-based Search Engine In Architecture Using Self-organizing Maps. In <em>CAADRIA 2024</em> (pp. 19&ndash;28).</li>
+        <li>Chen, J., Stouffs, R., &amp; Biljecki, F. (2021). Hierarchical (multi-label) architectural image recognition and classification. In <em>CAADRIA 2021</em> (pp. 161&ndash;170).</li>
+        <li>Emoto, H. (2015). The reception history of John Ruskin: Towards a global history of modern architectural thought.</li>
+        <li>Forty, A. (2000). <em>Words and buildings: A vocabulary of modern architecture</em>. Thames &amp; Hudson.</li>
+        <li>Ilbeigi, M., et al. (2019). Cognitive differences in residential facades from the aesthetic perspectives of architects and non-architects. <em>Sustainable Cities and Society</em>, 51(11), 101760.</li>
+        <li>Wong, J. (2010). The text of free-form architecture: qualitative study of the discourse of four architects. <em>Design Studies</em>, 31(3), 237&ndash;267.</li>
+        <li>Mikolov, T., Chen, K., Corrado, G., &amp; Dean, J. (2013). Efficient estimation of word representations in vector space. <em>arXiv:1301.3781</em>.</li>
+        <li>Mondal, J., &amp; Hou, Y. (2022). Quantifying differences between architects&rsquo; and non-architects&rsquo; visual perception of originality of tower typology using deep learning. In <em>CAAD Futures 2021</em> (pp. 203&ndash;221).</li>
+        <li>Yazici, M., &amp; Durmus Ozturk, S. (2023). An analysis of Rem Koolhaas&rsquo;s discourses on architecture and urban design using a corpus-based model. <em>Frontiers of Architectural Research</em>, 12(2), 222&ndash;241.</li>
+      </ol>
+    </section>
+
+    <!-- Figures index -->
+    <section id="figures" class="section">
+      <h2>List of Figures</h2>
+      <ul class="figure-index">
+        <li><a href="#fig1">Figure 1</a> &mdash; Target architects/architectural groups and research flow</li>
+        <li><a href="#fig2">Figure 2</a> &mdash; Word Cloud and Top 20 Most Frequent Words in the Dataset</li>
+        <li><a href="#fig3">Figure 3</a> &mdash; Training progression of the Word2Vec model (Ito)</li>
+        <li><a href="#fig4">Figure 4</a> &mdash; Effective range of similar words for &lsquo;Architecture&rsquo; in Le Corbusier&rsquo;s context</li>
+        <li><a href="#fig5">Figure 5</a> &mdash; Effective similar word counts and statistical results</li>
+        <li><a href="#fig6">Figure 6</a> &mdash; Architects/groups and synonym treemap by search term</li>
+        <li><a href="#fig7">Figure 7</a> &mdash; Dendrogram and treemap: Wang and Isozaki&rsquo;s &lsquo;design&rsquo;</li>
+      </ul>
+    </section>
+
+  </main>
+
+</body>
+</html>
