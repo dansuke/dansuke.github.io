@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip show:*)",
+      "Bash(pip install:*)",
+      "Bash(python:*)",
+      "Bash(git rm:*)",
+      "mcp__Claude_Preview__preview_start"
+    ]
+  }
+}
