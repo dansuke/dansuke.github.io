@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Optimizing Tree Placement on Digital Twins Using 3D Gaussian Splatting</title>
+  <link rel="stylesheet" href="research.css">
+</head>
+<body>
+
+  <header class="hero">
+    <div class="hero-inner">
+      <h1>Optimizing Tree Placement on Digital Twins Using 3D Gaussian Splatting</h1>
+      <p class="hero-subtitle">A method based on a genetic algorithm using greenness visibility and personalized multimodal sensibility evaluation</p>
+      <div class="hero-keywords">
+        <span class="keyword">Digital Twin</span>
+        <span class="keyword">3D Gaussian Splatting</span>
+        <span class="keyword">Green View Index</span>
+        <span class="keyword">Genetic Algorithm</span>
+        <span class="keyword">Multimodal</span>
+        <span class="keyword">LoRA</span>
+      </div>
+    </div>
+  </header>
+
+  <nav class="toc">
+    <div class="toc-inner">
+      <h2>Contents</h2>
+      <ol>
+        <li><a href="#abstract">Abstract</a></li>
+        <li><a href="#introduction">Introduction</a></li>
+        <li><a href="#methodology">Methodology</a>
+          <ol>
+            <li><a href="#target-site">Target Site</a></li>
+            <li><a href="#digital-twin">Digital Twin Data Creation</a></li>
+            <li><a href="#optimization-framework">Optimization Framework Overview</a></li>
+          </ol>
+        </li>
+        <li><a href="#results">Results</a>
+          <ol>
+            <li><a href="#result-maximize">Maximizing Green View Index</a></li>
+            <li><a href="#result-target">Achieving Target GVI</a></li>
+            <li><a href="#result-multimodal">Introduction of Multimodal Evaluation</a></li>
+          </ol>
+        </li>
+        <li><a href="#conclusion">Conclusion and Discussion</a></li>
+        <li><a href="#references">References</a></li>
+        <li><a href="#figures">List of Figures</a></li>
+      </ol>
+    </div>
+  </nav>
+
+  <main class="content">
+
+    <!-- Abstract -->
+    <section id="abstract" class="section">
+      <h2>Abstract</h2>
+      <div class="abstract-box">
+        <p>Urban green space placement strongly influences psychological comfort. Conventional evaluation methods using Green View Index (GVI) remain limited by viewpoint dependence and a lack of visual realism. This study introduces a tree placement optimization method using genetic algorithms (GA) on digital twins built with 3D Gaussian Splatting (3DGS). Unlike mesh or point cloud models, 3DGS reproduces key perceptual features such as foliage overlap and transparency, enabling realistic landscape evaluation from multiple viewpoints.</p>
+        <p>Three optimization tasks were formulated: (1) maximizing GVI across multiple viewpoints, (2) achieving a distinct target GVI for each viewpoint, and (3) integrating aesthetic evaluation using CLIP. Experiments showed that 10 trees achieved an average GVI of 36.84% and met respective target values (25%, 30%, 40%) within 1% error. Moreover, CLIP-LoRA fine-tuning with a small dataset produced distinct spatial configurations according to prompts such as &ldquo;dense&rdquo; and &ldquo;refreshing,&rdquo; even at an identical GVI.</p>
+        <p>Fine-tuning also separated these opposing aesthetic concepts in the embedding space, shifting image&ndash;prompt relationships from aligned to strongly negative correlations. This method demonstrates the potential for human-centered landscape design support that integrates quantitative measures with human aesthetic judgment.</p>
+      </div>
+    </section>
+
+    <!-- 1. Introduction -->
+    <section id="introduction" class="section">
+      <h2><span class="section-num">1.</span> Introduction</h2>
+
+      <p>The Green View Index (GVI) quantifies the proportion of visible greenery within the human field of view and plays an important role in evaluating the spatial arrangement of urban green spaces. Unlike overhead green coverage metrics (GCR and CCR), GVI measures greenery from a pedestrian&rsquo;s eye level, making it a human-centered indicator. Because it has been shown to correlate strongly with psychological comfort and landscape quality, GVI has increasingly been adopted as an evaluation metric in urban planning.</p>
+
+      <p>However, arranging trees effectively to enhance greenery visibility remains complex. The relationship between green quantity and comfort is non-linear: excessive greenery can increase stress, and dense vegetation may appear unsafe. Achieving strong visual impact with limited trees, therefore, requires efficient placement strategies.</p>
+
+      <p>Tree placement optimization using genetic algorithms (GA) has been explored to address this complexity. Yet most studies rely on numerical indicators such as pedestrian flow and thermal conditions, making it difficult to reflect human visual and aesthetic perception. Consequently, optimization results often diverge from sensory evaluation, highlighting the need for frameworks that integrate subjective and aesthetic judgment.</p>
+
+      <p>GVI assessment also faces technical constraints. Conventional methods use static data such as street view images and cannot evaluate designs during planning. Because GVI depends on viewpoint, virtual environments capable of analysis from multiple perspectives are needed. Although digital twin technologies now compute GVI from arbitrary viewpoints using point clouds and 3D city models, mesh and point cloud models still fail to reproduce visual subtleties&mdash;foliage overlap, transparency, and spatial openness&mdash;causing perceptual loss in evaluation.</p>
+
+      <p>To overcome these limitations, this study proposes a tree placement optimization method using genetic algorithms applied to digital twins constructed with 3D Gaussian Splatting (3DGS). 3DGS represents three-dimensional spatial data obtained from multiple images as dense Gaussian distributions, enabling fast rendering of photorealistic landscapes with view-dependent color and transparency. Compared with mesh- or volume-based methods, 3DGS reproduces subtle visual features such as foliage overlap, light transmission, and spatial permeability, allowing dynamic and realistic landscape evaluation from multiple viewpoints.</p>
+
+      <figure id="fig1" class="figure">
+        <img src="image/research/fig_p2_1.jpeg" alt="Comparison of 3D Gaussian Splatting with conventional methods such as mesh and point cloud representations" loading="lazy">
+        <figcaption><a href="#fig1">Figure 1.</a> Comparison of 3D Gaussian Splatting with conventional methods</figcaption>
+      </figure>
+
+      <p>Furthermore, this study also focuses on the role of human language in aesthetic evaluation. In the field of architectural informatics, previous research has demonstrated through text-analysis techniques that even a single word can carry different qualitative meanings depending on the cognitive tendencies of an individual architect, quantitatively revealing that the conceptual components underlying the same term vary from person to person. Inspired by this insight, the present study explores the possibility of personalizing sensibility-related language on an individual, human-centered basis and incorporating such personalized linguistic impressions into design evaluation. To operationalize this idea, this study employs multimodal AI (CLIP), which embeds images and text in a shared semantic space. By linking aesthetic expressions such as &ldquo;dense&rdquo; and &ldquo;refreshing&rdquo; with visual data, CLIP enables these subjective linguistic impressions to be treated as quantitative indicators, allowing optimization that integrates both GVI-based metrics and human aesthetic judgment.</p>
+    </section>
+
+    <!-- 2. Methodology -->
+    <section id="methodology" class="section">
+      <h2><span class="section-num">2.</span> Methodology</h2>
+
+      <!-- 2.1 Target Site -->
+      <section id="target-site" class="subsection">
+        <h3>2.1. Target Site</h3>
+
+        <figure id="fig2" class="figure">
+          <img src="image/research/fig_p3_1.jpeg" alt="Target site with on-site photographs and 3DGS images captured from each camera position" loading="lazy">
+          <figcaption><a href="#fig2">Figure 2.</a> Target site, on-site photographs, and 3DGS images captured from each camera</figcaption>
+        </figure>
+
+        <p>Ritsumeikan University Biwako&ndash;Kusatsu Campus&rsquo;s Central Circus was selected as the study site for investigating tree placement. This outdoor space features several intersecting circulation paths surrounding a central fountain, making it suitable for assessing how tree placement influences visual experience.</p>
+      </section>
+
+      <!-- 2.2 Digital Twin Data Creation -->
+      <section id="digital-twin" class="subsection">
+        <h3>2.2. Digital Twin Data Creation</h3>
+        <p>A 10-minute site perimeter video was recorded, yielding 350 still images. 3DGS data were generated using Polycam, and after removing unnecessary splats, 778,019 points remained. High-quality 3D tree models (OBJ files) with detailed foliage and branches were used for placement evaluation.</p>
+        <p>The data were imported into Unity with the site center as the origin. Three cameras were placed at main circulation intersections for multi-viewpoint evaluation (<a href="#fig2">Figure 2</a>). Camera height was set at 1.6 m to represent eye level, with an 80&deg; horizontal and 60&deg; vertical field of view matching stable human vision. Evaluation was limited to three viewpoints for computational efficiency, though the 3DGS-based digital twin allows flexible addition or modification of viewpoints.</p>
+      </section>
+
+      <!-- 2.3 Optimization Framework -->
+      <section id="optimization-framework" class="subsection">
+        <h3>2.3. Optimization Framework Overview</h3>
+        <p>The optimization workflow is illustrated in <a href="#fig3">Figure 3</a>. Tree placement optimization was performed using GA on a digital twin constructed with 3DGS. Each placement solution (individual) comprised position coordinates (x, z) and a y-axis rotation angle (deg) for each tree. GA explored optimal solutions through iterative selection, crossover, and mutation. Position coordinates were generated and updated within a 500&times;500 pixel mask that excluded buildings, the fountain, and areas within 5 m of each camera.</p>
+
+        <figure id="fig3" class="figure figure-wide">
+          <img src="image/research/fig_p4_1.jpeg" alt="Overview of the proposed method for tree placement optimization showing the complete workflow" loading="lazy">
+          <figcaption><a href="#fig3">Figure 3.</a> Overview of the proposed method for tree placement optimization</figcaption>
+        </figure>
+
+        <p>Coordinates falling outside valid regions after crossover or mutation were corrected to the nearest valid point using a KD-tree, ensuring solution validity. Placement constraints also prevented overlap between trees within the model range (width 3.5 m). Each individual was rendered in Unity, producing images from three viewpoints (480&times;640 px). Fitness was calculated from these images and used in generation updates.</p>
+
+        <p>Fitness was defined using two indicators: GVI and multimodal evaluation. Three optimization tasks were formulated, progressing from quantitative to aesthetic indicators.</p>
+
+        <h4>2.3.1. Maximizing Green View Index</h4>
+        <p>This task explores the theoretical upper limit of GVI achievable with a given number of trees, quantitatively capturing the landscape potential of the site. RGB image values are analyzed to extract &ldquo;green&rdquo; pixels based on threshold conditions from previous research. The ratio of green pixels to total pixels is then calculated (<a href="#fig3">Figure 3</a> (1)), and an objective function F<sub>1</sub> is defined to maximize the total GVI across all camera viewpoints (<a href="#fig3">Figure 3</a> (2)). This task establishes a foundational step for verifying the validity of viewpoint-dependent evaluation using 3DGS and the effectiveness of GA.</p>
+
+        <h4>2.3.2. Achieving Target GVI</h4>
+        <p>Assuming practical design use, the objective function F<sub>2</sub> minimizes the squared error between the target GVI (G<sub>target<em>i</em></sub>) for each viewpoint and the actual GVI (G<sub>c<em>i</em></sub>) (<a href="#fig3">Figure 3</a> (3)). This approach efficiently achieves target GVI by weighting viewpoint importance within a limited tree count.</p>
+
+        <h4>2.3.3. Introduction of Multimodal Evaluation</h4>
+        <p>In addition to GVI, we calculated cosine similarity between rendered images and the text prompts &ldquo;a dense landscape&rdquo; and &ldquo;a refreshing landscape&rdquo; using the CLIP model (ViT-B/16). These contrasting prompts represent aesthetic impressions of density and openness. Input images were resized to 224&times;224 pixels before analysis. The quantitative (S<sub>green</sub>) and aesthetic (S<sub>CLIP</sub>) indicators were normalized and combined to define the objective function F<sub>3</sub>, which maximizes both (<a href="#fig3">Figure 3</a> (4)&ndash;(6)). This task targets a single viewpoint (CAMERA 2) to verify the multimodal indicator&rsquo;s effectiveness.</p>
+      </section>
+    </section>
+
+    <!-- 3. Results -->
+    <section id="results" class="section">
+      <h2><span class="section-num">3.</span> Results</h2>
+
+      <!-- 3.1 -->
+      <section id="result-maximize" class="subsection">
+        <h3>3.1. Maximizing Green View Index</h3>
+
+        <p><a href="#fig4">Figure 4</a> shows GVI transitions by camera for the 10-tree layout. Although final values varied among cameras, GVI reached 29.96% for CAMERA 1, 38.77% for CAMERA 2, and 35.01% for CAMERA 3, with an average of 36.84%.</p>
+
+        <figure id="fig4" class="figure">
+          <img src="image/research/fig_p5_1.jpeg" alt="Transition of GVI for each camera in the 10-tree layout showing convergence over generations" loading="lazy">
+          <figcaption><a href="#fig4">Figure 4.</a> Transition of GVI for each camera (10-tree layout)</figcaption>
+        </figure>
+
+        <p><a href="#fig5">Figure 5</a> shows green area expansion and tree placement as the number of trees increased to 5, 10, and 15. As trees increased, vacant spaces within each field of view were efficiently filled with greenery, and placement patterns shifted accordingly. With only 5 trees, placement concentrated in positions most visible to each camera, while at 15 trees, trees appeared around the fountain and in areas seen by a single camera.</p>
+
+        <figure id="fig5" class="figure figure-wide">
+          <img src="image/research/fig_p6_1.jpeg" alt="Mask images of green areas by camera and distribution of plantings for different tree counts" loading="lazy">
+          <figcaption><a href="#fig5">Figure 5.</a> Mask images of green areas by camera and distribution of plantings (Gray areas indicate regions where planting is not permitted)</figcaption>
+        </figure>
+
+        <p>To verify this trend quantitatively, <a href="#table1">Table 1</a> presents the GVI changes as tree numbers increased from 5 to 30 in increments of 5. The GVI contribution rate (%/tree) was calculated by dividing GVI increase by the tree count (5), representing improvement per tree. Results show that beyond 20 trees, the contribution rate declined sharply, indicating limited gains from additional placement and nearing green area saturation.</p>
+
+        <div class="table-container" id="table1">
+          <table>
+            <caption><a href="#table1">Table 1.</a> Change in GVI and contribution rate with increasing number of trees</caption>
+            <thead>
+              <tr>
+                <th>Number of Trees</th>
+                <th>0</th>
+                <th>5</th>
+                <th>10</th>
+                <th>15</th>
+                <th>20</th>
+                <th>25</th>
+                <th>30</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>CAMERA 1</td>
+                <td>22.30</td>
+                <td>28.67</td>
+                <td>29.96</td>
+                <td>31.97</td>
+                <td>30.35</td>
+                <td>31.37</td>
+                <td>31.57</td>
+              </tr>
+              <tr>
+                <td>CAMERA 2</td>
+                <td>18.73</td>
+                <td>30.45</td>
+                <td>38.77</td>
+                <td>36.93</td>
+                <td>39.05</td>
+                <td>37.55</td>
+                <td>37.58</td>
+              </tr>
+              <tr>
+                <td>CAMERA 3</td>
+                <td>19.71</td>
+                <td>38.43</td>
+                <td>35.01</td>
+                <td>41.61</td>
+                <td>41.05</td>
+                <td>41.90</td>
+                <td>39.32</td>
+              </tr>
+              <tr class="highlight-row">
+                <td>Average</td>
+                <td>20.25</td>
+                <td>32.52</td>
+                <td>34.58</td>
+                <td>36.84</td>
+                <td>36.82</td>
+                <td>36.94</td>
+                <td>36.16</td>
+              </tr>
+              <tr class="highlight-row">
+                <td>Contribution (%/tree)</td>
+                <td>&ndash;</td>
+                <td>2.454</td>
+                <td>0.412</td>
+                <td>0.452</td>
+                <td>&minus;0.004</td>
+                <td>0.024</td>
+                <td>&minus;0.156</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 3.2 -->
+      <section id="result-target" class="subsection">
+        <h3>3.2. Achieving Target Green View Index</h3>
+
+        <p><a href="#fig6">Figure 6</a> shows the optimization results where target GVI values were set for each viewpoint (CAMERA 1: 25%, CAMERA 2: 30%, CAMERA 3: 40%).</p>
+
+        <figure id="fig6" class="figure">
+          <img src="image/research/fig_p7_1.jpeg" alt="Transition of GVI toward target values for each camera" loading="lazy">
+          <figcaption><a href="#fig6">Figure 6.</a> Transition of GVI toward target values for each camera</figcaption>
+        </figure>
+
+        <p>The GVI transition for each camera with 10 trees is illustrated in <a href="#fig6">Figure 6</a>. After optimization, CAMERA 1 achieved 24.92%, CAMERA 2 reached 30.59%, and CAMERA 3 reached 39.32%, all within 1% of target values. These findings suggest that, under the assumed site conditions and viewpoint configuration, about ten trees are sufficient to meet all target GVI values simultaneously.</p>
+
+        <figure id="fig7" class="figure">
+          <img src="image/research/fig_p7_2.jpeg" alt="Final images and distribution of plantings for each camera viewpoint" loading="lazy">
+          <figcaption><a href="#fig7">Figure 7.</a> Images and distribution of plantings</figcaption>
+        </figure>
+
+        <p>The final planting results (<a href="#fig7">Figure 7</a>) show that for CAMERA 1 and 2, greenery appears within the field of view while maintaining openness, whereas for CAMERA 3, it is concentrated in the foreground. These results demonstrate that the proposed method adjusts placement patterns by viewpoint, achieving viewpoint-dependent landscape design on digital twins even with the same number of trees.</p>
+      </section>
+
+      <!-- 3.3 -->
+      <section id="result-multimodal" class="subsection">
+        <h3>3.3. Introduction of Multimodal Evaluation</h3>
+
+        <h4>3.3.1. Evaluation Using CLIP</h4>
+
+        <figure id="fig8" class="figure">
+          <img src="image/research/fig_p7_3.jpeg" alt="Optimization results using CLIP: tree placement and combined score transition" loading="lazy">
+          <figcaption><a href="#fig8">Figure 8.</a> Optimization results using CLIP: placement (left) and combined score transition (right)</figcaption>
+        </figure>
+
+        <p>Beyond GVI, we conducted optimization integrating aesthetic evaluation with CLIP. Under a target GVI of 30% and 10 trees, CLIP cosine similarity for the text prompts &ldquo;a dense landscape&rdquo; and &ldquo;a refreshing landscape&rdquo; was added to the fitness function.</p>
+
+        <p><a href="#fig8">Figure 8</a> presents final placement results for each prompt and the transition of the combined score (F<sub>3</sub>) by generation. Both prompts met the target GVI, with the combined score increasing from about 0.7850 to 0.80 across generations. However, CLIP similarity remained low&mdash;0.1778 for &ldquo;dense&rdquo; and 0.2028 for &ldquo;refreshing.&rdquo; Visual inspection also showed little difference between the two results, indicating that the CLIP model pre-trained on general large-scale datasets could not effectively distinguish aesthetic expressions in landscape design.</p>
+
+        <h4>3.3.2. Model Fine-tuning Using CLIP-LoRA</h4>
+
+        <figure id="fig9" class="figure">
+          <img src="image/research/fig_p8_1.jpeg" alt="Dataset creation and CLIP-LoRA fine-tuning process" loading="lazy">
+          <figcaption><a href="#fig9">Figure 9.</a> Dataset creation and CLIP-LoRA fine-tuning process</figcaption>
+        </figure>
+
+        <p>To address the challenge, we introduced fine-tuning with CLIP-LoRA. LoRA efficiently adapts pre-trained models through low-rank matrices. In this study, images generated from random tree placements in Unity were subjectively evaluated, with those showing open foregrounds labeled as &ldquo;a refreshing landscape&rdquo; and dense, passage-blocking configurations labeled as &ldquo;a dense landscape.&rdquo; LoRA fine-tuning was then conducted as a binary classification task to enlarge cosine similarity differences between the two classes. <a href="#fig9">Figure 9</a> illustrates the CLIP-LoRA fine-tuning process.</p>
+
+        <figure id="fig10" class="figure">
+          <img src="image/research/fig_p8_2.jpeg" alt="Text-text and image-prompt similarity shifts during CLIP-LoRA fine-tuning" loading="lazy">
+          <figcaption><a href="#fig10">Figure 10.</a> Text&ndash;text and image&ndash;prompt similarity shifts during CLIP-LoRA fine-tuning</figcaption>
+        </figure>
+
+        <p><a href="#fig10">Figure 10</a> shows the evolution of text&ndash;text cosine similarity during fine-tuning and image&ndash;prompt similarity at Zero-Shot and 500 epochs. Text similarity decreased from 0.9214 to 0.7437, increasing the distance between &ldquo;dense&rdquo; and &ldquo;refreshing&rdquo; in the embedding space. While image&ndash;prompt similarities (validation) were aligned in Zero-Shot (r = 0.8486), fine-tuning shifted them to a strong negative correlation (r = &minus;0.9627), positioning the prompts as contrasting concepts.</p>
+
+        <figure id="fig11" class="figure">
+          <img src="image/research/fig_p9_1.jpeg" alt="Optimization results using CLIP-LoRA: tree placement and combined score transition" loading="lazy">
+          <figcaption><a href="#fig11">Figure 11.</a> Optimization results using CLIP-LoRA: placement (left) and combined score transition (right)</figcaption>
+        </figure>
+
+        <p><a href="#fig11">Figure 11</a> presents optimization results using the fine-tuned model. For both prompts, cosine similarity increased by approximately 0.08: &ldquo;a dense landscape&rdquo; produced clustered trees blocking passage, while &ldquo;a refreshing landscape&rdquo; formed open alignments along paths. Despite identical GVI, spatial configurations differed visibly by prompt, reflecting design intent. These findings suggest that LoRA fine-tuning, even with few samples, enables CLIP to learn landscape-specific aesthetic cues and supports human-centered placement optimization.</p>
+      </section>
+    </section>
+
+    <!-- 4. Conclusion -->
+    <section id="conclusion" class="section">
+      <h2><span class="section-num">4.</span> Conclusion and Discussion</h2>
+
+      <p>This study proposed a human-centered landscape design method by optimizing tree placement with GA on digital twins built using 3DGS. 3DGS enabled viewpoint-dependent evaluation, reproducing visual characteristics crucial to human perception, including foliage overlap and transparency. Setting different target GVI values for multiple viewpoints allowed optimization reflecting visual importance.</p>
+
+      <p>In multimodal evaluation, aesthetic assessment with CLIP-LoRA complemented quantitative GVI indicators. LoRA fine-tuning with few samples produced distinct spatial configurations by prompt, even at the same GVI, showing design intent in placement patterns and separating opposing prompts in the embedding space. These findings demonstrate that aesthetic impressions such as &ldquo;density&rdquo; and &ldquo;openness,&rdquo; previously uncaptured by numerical optimization, can be quantified and incorporated into the design process.</p>
+
+      <p>This study has some limitations. Evaluation was restricted to three viewpoints, and walking paths and varied perspectives were not fully considered. Aesthetic assessment also reflected the author&rsquo;s subjectivity, requiring validation across multiple designers. Nevertheless, the 3DGS environment enables easy addition of viewpoints, offering strong potential for future expansion.</p>
+
+      <p>Future work includes multi-viewpoint optimization addressing trade-offs among viewpoints, robustness testing through sensitivity analysis of viewpoint selection and GA parameters, and validating links between GVI and subjective impressions through user experiments. These developments aim to build a human-centered landscape design system combining aesthetic and quantitative evaluation.</p>
+    </section>
+
+    <!-- References -->
+    <section id="references" class="section">
+      <h2>References</h2>
+      <ol class="references-list">
+        <li>Aoki, Y. (1991). Evaluation methods for landscapes with greenery. <em>Landscape Research</em>, 16(3), 3&ndash;6.</li>
+        <li>Estacio, I., Hadfi, R., Blanco, A., Ito, T., &amp; Babaan, J. (2022). Optimization of tree positioning to maximize walking in urban outdoor spaces. <em>Sustainable Cities and Society</em>, 86(2), 104105.</li>
+        <li>Jing, X., Liu, C., Li, J., Gao, W., &amp; Fukuda, H. (2024). Effects of window green view index on stress recovery of college students. <em>Buildings</em>, 14(10), 3316.</li>
+        <li>Kerbl, B., Kopanas, G., Leimk&uuml;hler, T., &amp; Drettakis, G. (2023). 3D Gaussian splatting for real-time radiance field rendering. <em>ACM Transactions on Graphics (TOG)</em>, 42(4), Article 139.</li>
+        <li>Kumakoshi, Y., Chan, S. Y., Koizumi, H., Li, J., &amp; Yoshimura, Y. (2020). Standardized Green View Index and quantification of different metrics of urban green vegetation. <em>Sustainability</em>, 12(18), 7434.</li>
+        <li>Lis, A., Pardela, &Lstrok;., &amp; Iwankowski, P. (2019). Impact of vegetation on perceived safety and preference in city parks. <em>Sustainability</em>, 11(22), 6324.</li>
+        <li>Luo, J., Liu, P., Xu, W., Zhao, T., &amp; Biljecki, F. (2025). A perception-powered urban digital twin to support human-centered urban planning. <em>Cities</em>, 152, 105473.</li>
+        <li>Ono, K., Tanikawa, N., &amp; Yamada, S. (2025). The image of a famous architect as a whole as it appears in academic discourse. In <em>CAADRIA 2025</em> (pp. 561&ndash;570).</li>
+        <li>Ooka, R., Chen, H., &amp; Kato, S. (2008). Study on optimum arrangement of trees for design of pleasant outdoor environment. <em>Journal of Wind Engineering and Industrial Aerodynamics</em>, 96, 1733&ndash;1748.</li>
+        <li>Radford, A., Kim, J. W., Hallacy, C., et al. (2021). Learning transferable visual models from natural language supervision. <em>ICML 2021</em>, 139, 8748&ndash;8763.</li>
+        <li>Song, C., Sang, J., Zhang, L., et al. (2022). Adaptiveness of RGB-image derived algorithms in the measurement of fractional vegetation coverage. <em>BMC Bioinformatics</em>, 23, Article 358.</li>
+        <li>Tang, L., He, J., Peng, W., et al. (2023). Assessing the visibility of urban greenery using MLS LiDAR data. <em>Landscape and Urban Planning</em>, 232, 104662.</li>
+        <li>Wang, Y., Wang, D., &amp; Zhang, X. (2025). Higher greenery visibility is not necessarily better. <em>Building and Environment</em>, Article 113563.</li>
+        <li>Zanella, M., &amp; Ben Ayed, I. (2024). Low-rank few-shot adaptation of vision-language models. <em>arXiv:2405.18541</em>.</li>
+      </ol>
+    </section>
+
+    <!-- Figures index -->
+    <section id="figures" class="section">
+      <h2>List of Figures</h2>
+      <ul class="figure-index">
+        <li><a href="#fig1">Figure 1</a> &mdash; Comparison of 3D Gaussian Splatting with conventional methods</li>
+        <li><a href="#fig2">Figure 2</a> &mdash; Target site, on-site photographs, and 3DGS images</li>
+        <li><a href="#fig3">Figure 3</a> &mdash; Overview of the proposed method for tree placement optimization</li>
+        <li><a href="#fig4">Figure 4</a> &mdash; Transition of GVI for each camera (10-tree layout)</li>
+        <li><a href="#fig5">Figure 5</a> &mdash; Mask images of green areas and distribution of plantings</li>
+        <li><a href="#fig6">Figure 6</a> &mdash; Transition of GVI toward target values for each camera</li>
+        <li><a href="#fig7">Figure 7</a> &mdash; Images and distribution of plantings</li>
+        <li><a href="#fig8">Figure 8</a> &mdash; Optimization results using CLIP</li>
+        <li><a href="#fig9">Figure 9</a> &mdash; Dataset creation and CLIP-LoRA fine-tuning process</li>
+        <li><a href="#fig10">Figure 10</a> &mdash; Text&ndash;text and image&ndash;prompt similarity shifts</li>
+        <li><a href="#fig11">Figure 11</a> &mdash; Optimization results using CLIP-LoRA</li>
+      </ul>
+      <div class="table-index">
+        <p><a href="#table1">Table 1</a> &mdash; Change in GVI and contribution rate with increasing number of trees</p>
+      </div>
+    </section>
+
+  </main>
+</body>
+</html>
