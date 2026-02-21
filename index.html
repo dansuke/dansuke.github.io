@@ -3,157 +3,257 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Research</title>
+  <title>Kotaro Ono</title>
   <style>
-    @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap");
+    @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@400;700&display=swap");
 
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
       font-family: "Inter", "Noto Sans JP", sans-serif;
-      background: #f5f5f3;
+      background: #fafafa;
       color: #2c2c2c;
-      min-height: 100vh;
+      line-height: 1.7;
     }
 
-    .page {
-      max-width: 960px;
+    /* ===== Hero ===== */
+    .hero {
+      background: #1a1a1a;
+      color: #fff;
+      padding: 5rem 2rem 3.5rem;
+    }
+
+    .hero-inner {
+      max-width: 820px;
       margin: 0 auto;
-      padding: 4rem 2rem;
     }
 
-    .page-title {
-      font-size: 1.8rem;
+    .hero h1 {
+      font-size: 2.2rem;
       font-weight: 700;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.2rem;
     }
 
-    .page-desc {
-      color: #888;
-      font-size: 0.9rem;
-      margin-bottom: 3rem;
+    .hero .name-ja {
+      font-family: "Noto Serif JP", serif;
+      font-size: 1rem;
+      font-weight: 400;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 1.5rem;
     }
 
-    .cards {
-      display: grid;
-      gap: 1.5rem;
+    .hero .affil {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.7);
+      line-height: 1.8;
     }
 
-    .card {
+    .hero .affil span {
+      display: block;
+    }
+
+    .hero .links {
+      margin-top: 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+    }
+
+    .hero .links a {
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: #fff;
+      text-decoration: none;
+      padding: 0.4em 1em;
+      border-radius: 100px;
+      border: 1px solid rgba(255,255,255,0.3);
+      transition: background 0.2s;
+    }
+
+    .hero .links a:hover {
+      background: rgba(255,255,255,0.12);
+    }
+
+    /* ===== Main ===== */
+    .main {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 3rem 2rem 5rem;
+    }
+
+    .section {
+      margin-bottom: 3.5rem;
+    }
+
+    .section h2 {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #999;
+      margin-bottom: 1.2rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid #e8e8e8;
+    }
+
+    /* ===== Interests ===== */
+    .interests {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .interests span {
+      font-size: 0.8rem;
+      font-weight: 500;
+      padding: 0.3em 0.9em;
+      border-radius: 100px;
+      background: #f0f0ee;
+      color: #444;
+    }
+
+    /* ===== Publication Cards ===== */
+    .pub {
       display: block;
       text-decoration: none;
       color: inherit;
-      background: #fff;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-      transition: transform 0.2s, box-shadow 0.2s;
+      padding: 1.2rem 0;
+      border-bottom: 1px solid #eee;
+      transition: background 0.15s;
     }
 
-    .card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    a.pub:hover {
+      background: #f5f5f3;
+      margin-left: -0.8rem;
+      margin-right: -0.8rem;
+      padding-left: 0.8rem;
+      padding-right: 0.8rem;
+      border-radius: 8px;
     }
 
-    .card-accent {
-      height: 6px;
-    }
-
-    .card-body {
-      padding: 1.5rem 2rem 2rem;
-    }
-
-    .card-label {
+    .pub-year {
       font-size: 0.7rem;
       font-weight: 600;
-      letter-spacing: 0.08em;
+      color: #999;
+      letter-spacing: 0.05em;
+    }
+
+    .pub-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      line-height: 1.45;
+      margin: 0.2rem 0;
+    }
+
+    .pub-authors {
+      font-size: 0.8rem;
+      color: #777;
+    }
+
+    .pub-venue {
+      font-size: 0.78rem;
+      color: #999;
+      font-style: italic;
+    }
+
+    .pub-link-tag {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 600;
+      padding: 0.15em 0.5em;
+      border-radius: 4px;
+      background: #1a1a3a;
+      color: #fff;
+      margin-top: 0.3rem;
       text-transform: uppercase;
-      margin-bottom: 0.6rem;
+      letter-spacing: 0.05em;
     }
 
-    .card-title {
-      font-size: 1.15rem;
-      font-weight: 700;
-      line-height: 1.4;
-      margin-bottom: 0.5rem;
-    }
+    .pub-link-tag.green { background: #2d5a3f; }
 
-    .card-sub {
-      font-size: 0.85rem;
-      color: #666;
-      line-height: 1.5;
-      margin-bottom: 1rem;
-    }
-
-    .card-keywords {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-    }
-
-    .card-kw {
-      font-size: 0.68rem;
-      font-weight: 500;
-      padding: 0.2em 0.6em;
-      border-radius: 100px;
-      background: #f0f0ee;
-      color: #555;
-    }
-
-    .card--green .card-accent { background: linear-gradient(90deg, #2d5a3f, #3a7a55); }
-    .card--green .card-label { color: #3a7a55; }
-
-    .card--indigo .card-accent { background: linear-gradient(90deg, #2d2d5a, #3a3a7a); }
-    .card--indigo .card-label { color: #3a3a7a; }
-
+    /* ===== Responsive ===== */
     @media (max-width: 600px) {
-      .page { padding: 2.5rem 1.2rem; }
-      .card-body { padding: 1.2rem 1.4rem 1.5rem; }
-      .card-title { font-size: 1.05rem; }
+      .hero { padding: 3.5rem 1.5rem 2.5rem; }
+      .hero h1 { font-size: 1.7rem; }
+      .main { padding: 2rem 1.2rem 3rem; }
     }
   </style>
 </head>
 <body>
 
-  <div class="page">
-    <h1 class="page-title">Research</h1>
-    <p class="page-desc">Research papers</p>
-
-    <div class="cards">
-
-      <a href="research01.html" class="card card--indigo">
-        <div class="card-accent"></div>
-        <div class="card-body">
-          <p class="card-label">Research 01</p>
-          <h2 class="card-title">The Image of a Famous Architect as a Whole as it Appears in Academic Discourse</h2>
-          <p class="card-sub">Comparison of conceptual diversity and interpretation using text mining</p>
-          <div class="card-keywords">
-            <span class="card-kw">Word2Vec</span>
-            <span class="card-kw">Text Mining</span>
-            <span class="card-kw">Semantic Analysis</span>
-            <span class="card-kw">Architectural Representation</span>
-          </div>
-        </div>
-      </a>
-
-      <a href="research_02.html" class="card card--green">
-        <div class="card-accent"></div>
-        <div class="card-body">
-          <p class="card-label">Research 02</p>
-          <h2 class="card-title">Optimizing Tree Placement on Digital Twins Using 3D Gaussian Splatting</h2>
-          <p class="card-sub">A method based on a genetic algorithm using greenness visibility and personalized multimodal sensibility evaluation</p>
-          <div class="card-keywords">
-            <span class="card-kw">Digital Twin</span>
-            <span class="card-kw">3D Gaussian Splatting</span>
-            <span class="card-kw">Green View Index</span>
-            <span class="card-kw">Genetic Algorithm</span>
-            <span class="card-kw">CLIP-LoRA</span>
-          </div>
-        </div>
-      </a>
-
+  <header class="hero">
+    <div class="hero-inner">
+      <h1>Kotaro Ono</h1>
+      <p class="name-ja">大野 耕太郎</p>
+      <div class="affil">
+        <span>D1, Graduate School of Science and Engineering, Ritsumeikan University</span>
+        <span>Architectural Informatics Lab. (Yamada Lab.)</span>
+        <span>Kozo Keikaku Engineering Inc.</span>
+      </div>
+      <div class="links">
+        <a href="https://scholar.google.com/citations?user=VS9bfikAAAAJ">Google Scholar</a>
+        <a href="http://satoshi-bon.jp/">Yamada Lab.</a>
+        <a href="https://orcid.org/0009-0004-0649-6120">ORCID</a>
+      </div>
     </div>
-  </div>
+  </header>
+
+  <main class="main">
+
+    <section class="section">
+      <h2>Research Interests</h2>
+      <div class="interests">
+        <span>Kansei Evaluation</span>
+        <span>Digital Twin</span>
+        <span>Optimization</span>
+        <span>Deep Learning</span>
+        <span>Multimodal AI</span>
+        <span>Architectural Informatics</span>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Publications</h2>
+
+      <a href="research_02.html" class="pub">
+        <span class="pub-year">2025</span>
+        <p class="pub-title">Optimizing Tree Placement on Digital Twins Using 3D Gaussian Splatting</p>
+        <p class="pub-venue">Under review</p>
+        <span class="pub-link-tag green">Read on this site</span>
+      </a>
+
+      <a href="research01.html" class="pub">
+        <span class="pub-year">2025</span>
+        <p class="pub-title">The Image of a Famous Architect as a Whole as it Appears in Academic Discourse</p>
+        <p class="pub-authors">K. Ono, N. Tanikawa, S. Yamada</p>
+        <p class="pub-venue">CAADRIA 2025, Vol. 1, pp. 561&ndash;570</p>
+        <span class="pub-link-tag">Read on this site</span>
+      </a>
+
+      <div class="pub">
+        <span class="pub-year">2022</span>
+        <p class="pub-title">マルチモーダル深層学習を用いた街並み画像に対する人間の振る舞い予測</p>
+        <p class="pub-authors">大野耕太郎, 山田悟史, 宗本晋作</p>
+        <p class="pub-venue">日本建築学会計画系論文集, 87(798), 1602&ndash;1611</p>
+      </div>
+
+      <div class="pub">
+        <span class="pub-year">2020</span>
+        <p class="pub-title">Deep Learning を用いたデザイン AI の作成と検証</p>
+        <p class="pub-authors">山田悟史, 大野耕太郎</p>
+        <p class="pub-venue">日本建築学会計画系論文集, 85(770), 987&ndash;995</p>
+      </div>
+
+      <div class="pub">
+        <span class="pub-year">2019</span>
+        <p class="pub-title">Deep Learning を用いた印象評価推定 AI の作成と検証</p>
+        <p class="pub-authors">山田悟史, 大野耕太郎</p>
+        <p class="pub-venue">日本建築学会計画系論文集, 84(759), 1323&ndash;1331</p>
+      </div>
+
+    </section>
+
+  </main>
 
 </body>
 </html>
