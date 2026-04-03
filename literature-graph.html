@@ -124,7 +124,7 @@ svg { width:100%; height:100%; display:block; }
 <div id="sb">
   <div class="sb-hd">
     <h1>Keyword Graph</h1>
-    <p>3DGS × 樹木配置最適化 研究キーワードマップ</p>
+    <p>3DGS × 樹木配置最適化 関連研究キーワードマップ</p>
   </div>
 
   <div>
@@ -148,7 +148,7 @@ svg { width:100%; height:100%; display:block; }
     </label>
     <label class="tg-row">
       <div class="tg" id="tg-this"></div>
-      <span>本研究キーワードを強調</span>
+      <span>興味キーワードを強調</span>
     </label>
   </div>
 
@@ -161,7 +161,7 @@ svg { width:100%; height:100%; display:block; }
     <div style="margin-top:5px;font-size:10px;color:var(--tx3)">エッジ太さ = 共起論文数</div>
     <div style="margin-top:5px;display:flex;align-items:center;gap:5px;font-size:10px;color:var(--gold)">
       <span style="width:10px;height:10px;border-radius:50%;border:2px solid var(--gold);display:inline-block"></span>
-      本研究のキーワード
+      私が興味のあるキーワード
     </div>
   </div>
 
@@ -402,19 +402,6 @@ svg { width:100%; height:100%; display:block; }
       "papers": [
         "paper-4",
         "paper-26"
-      ]
-    },
-    {
-      "id": "kw-LiDAR",
-      "label": "LiDAR",
-      "count": 2,
-      "rare": false,
-      "thisStudy": false,
-      "section": "A",
-      "color": "#4ade80",
-      "papers": [
-        "paper-5",
-        "paper-7"
       ]
     },
     {
@@ -717,6 +704,18 @@ svg { width:100%; height:100%; display:block; }
       ]
     },
     {
+      "id": "kw-LiDAR",
+      "label": "LiDAR",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "A",
+      "color": "#4ade80",
+      "papers": [
+        "paper-5"
+      ]
+    },
+    {
       "id": "kw-OpenGLレンダリング",
       "label": "OpenGLレンダリング",
       "count": 1,
@@ -774,42 +773,6 @@ svg { width:100%; height:100%; display:block; }
       "color": "#4ade80",
       "papers": [
         "paper-6"
-      ]
-    },
-    {
-      "id": "kw-Projected Point GVI",
-      "label": "Projected Point GVI",
-      "count": 1,
-      "rare": true,
-      "thisStudy": false,
-      "section": "A",
-      "color": "#4ade80",
-      "papers": [
-        "paper-7"
-      ]
-    },
-    {
-      "id": "kw-円筒射影",
-      "label": "円筒射影",
-      "count": 1,
-      "rare": true,
-      "thisStudy": false,
-      "section": "A",
-      "color": "#4ade80",
-      "papers": [
-        "paper-7"
-      ]
-    },
-    {
-      "id": "kw-都市規模GVI",
-      "label": "都市規模GVI",
-      "count": 1,
-      "rare": true,
-      "thisStudy": false,
-      "section": "A",
-      "color": "#4ade80",
-      "papers": [
-        "paper-7"
       ]
     },
     {
@@ -2432,54 +2395,6 @@ svg { width:100%; height:100%; display:block; }
       "weight": 1,
       "papers": [
         "paper-6"
-      ]
-    },
-    {
-      "source": "kw-LiDAR",
-      "target": "kw-Projected Point GVI",
-      "weight": 1,
-      "papers": [
-        "paper-7"
-      ]
-    },
-    {
-      "source": "kw-LiDAR",
-      "target": "kw-円筒射影",
-      "weight": 1,
-      "papers": [
-        "paper-7"
-      ]
-    },
-    {
-      "source": "kw-LiDAR",
-      "target": "kw-都市規模GVI",
-      "weight": 1,
-      "papers": [
-        "paper-7"
-      ]
-    },
-    {
-      "source": "kw-Projected Point GVI",
-      "target": "kw-円筒射影",
-      "weight": 1,
-      "papers": [
-        "paper-7"
-      ]
-    },
-    {
-      "source": "kw-Projected Point GVI",
-      "target": "kw-都市規模GVI",
-      "weight": 1,
-      "papers": [
-        "paper-7"
-      ]
-    },
-    {
-      "source": "kw-円筒射影",
-      "target": "kw-都市規模GVI",
-      "weight": 1,
-      "papers": [
-        "paper-7"
       ]
     },
     {
@@ -4850,25 +4765,6 @@ svg { width:100%; height:100%; display:block; }
       "relevance": 4
     },
     {
-      "id": "paper-7",
-      "no": 7,
-      "group": "A",
-      "title": "Efficient green view index quantification from LiDAR point clouds (PGVI)",
-      "author": "（複数著者）",
-      "journal": "Landscape and Urban Planning, 2026",
-      "year": 2026,
-      "url": "https://doi.org/10.1016/j.landurbplan.2026",
-      "keywords": [
-        "Projected Point GVI",
-        "LiDAR",
-        "円筒射影",
-        "都市規模GVI"
-      ],
-      "summary": "3D点群を円筒射影で2Dパノラマに変換するPGVIを提案。従来手法比約60倍高速化（100万視点10.42秒）。パノラマ写真ベースGVIとのR²=0.86。",
-      "relationship": "最新の効率的3DベースGVI推定。射影アプローチは3DGS内での高速GVI計算に知見を提供。",
-      "relevance": 4
-    },
-    {
       "id": "paper-8",
       "no": 8,
       "group": "A",
@@ -4892,7 +4788,7 @@ svg { width:100%; height:100%; display:block; }
       "no": 9,
       "group": "A",
       "title": "Comprehensive comparative analysis of Green View Index calculation methods",
-      "author": "（複数著者）",
+      "author": "Dongmin Yin,Terumitsu Hirata",
       "journal": "Land (MDPI), Vol.14(2), 289",
       "year": 2025,
       "url": "https://doi.org/10.3390/land14020289",
@@ -4930,10 +4826,10 @@ svg { width:100%; height:100%; display:block; }
       "no": 11,
       "group": "A",
       "title": "A new method for efficient GVI quantification using remote sensing (LGVI)",
-      "author": "（複数著者）",
+      "author": "Hua Yeyu, Qian Yuguo, Fei Tingting, Chen Zhiheng, Zhou Weiqi",
       "journal": "Urban Forestry & Urban Greening, 2025",
       "year": 2025,
-      "url": "https://doi.org/10.1016/j.ufug.2025",
+      "url": "https://doi.org/10.1016/j.ufug.2025.129013",
       "keywords": [
         "Line-based GVI",
         "リモートセンシング",
@@ -5139,7 +5035,7 @@ svg { width:100%; height:100%; display:block; }
       "no": 22,
       "group": "B",
       "title": "Integrating GIS, 3D-Isovist, and NSGA-II for landscape design automation in urban parks",
-      "author": "（イラン科学技術大学）",
+      "author": "Karim Zandniapour,  Akram Soroush, Ehsan Khezerlu Agdam, Haniyeh Sanaieian",
       "journal": "Information Processing in Agriculture, Vol.13(1), pp.1-16",
       "year": 2024,
       "url": "https://www.sciencedirect.com/science/article/pii/S2577444124000595",
@@ -5159,7 +5055,7 @@ svg { width:100%; height:100%; display:block; }
       "no": 23,
       "group": "B",
       "title": "Optimal planning of urban greening system using genetic algorithm (Tianjin)",
-      "author": "（複数著者）",
+      "author": "Lanmeng Feng, Xiaoyan Mi, Dachang Yuan",
       "journal": "Sustainable Cities and Society, 2022",
       "year": 2022,
       "url": "https://doi.org/10.1016/j.scs.2022.104285",
@@ -5178,7 +5074,7 @@ svg { width:100%; height:100%; display:block; }
       "no": 24,
       "group": "B",
       "title": "A workflow for climate-adaptive tree planting design through evolutionary algorithm",
-      "author": "（複数著者）",
+      "author": "Peng Z., Lai D., Yu B.",
       "journal": "Landscape Ecology (Springer)",
       "year": 2026,
       "url": "https://doi.org/10.1007/s10980-026-02324-z",
@@ -5275,7 +5171,7 @@ svg { width:100%; height:100%; display:block; }
       "no": 29,
       "group": "C",
       "title": "A novel framework utilizing 3DGS to construct building geometry for urban wind simulations",
-      "author": "（複数著者）",
+      "author": "Zhao P., Li C., Jiang J., Chen L., Wang X.",
       "journal": "Sustainable Cities and Society, 2025",
       "year": 2025,
       "url": "https://doi.org/10.1016/j.scs.2025.106143",
@@ -5294,7 +5190,7 @@ svg { width:100%; height:100%; display:block; }
       "no": 30,
       "group": "C",
       "title": "ForestSplat: Scalable forestry mapping using 3D Gaussian Splatting",
-      "author": "（ForestSplatチーム）",
+      "author": "Shaheen B., Zane M.D., Bui B.-T., Huang T., Merello M., Scheelk B., Crooks S., Wu M.",
       "journal": "Remote Sensing (MDPI), Vol.17(6), 993",
       "year": 2025,
       "url": "https://doi.org/10.3390/rs17060993",
@@ -5313,10 +5209,10 @@ svg { width:100%; height:100%; display:block; }
       "no": 31,
       "group": "C",
       "title": "HUGS: Holistic Urban 3D Scene Understanding via Gaussian Splatting",
-      "author": "Hongyu Zhou et al.",
+      "author": "Hongyu Zhou, Jiahao Shao, Lu Xu, Dongfeng Bai, Weichao Qiu, Bingbing Liu, Yue Wang, Andreas Geiger, Yiyi Liao",
       "journal": "CVPR 2024",
       "year": 2024,
-      "url": null,
+      "url": "https://arxiv.org/abs/2403.12722",
       "keywords": [
         "3D Gaussian Splatting",
         "都市シーン理解",
@@ -5387,10 +5283,10 @@ svg { width:100%; height:100%; display:block; }
       "no": 35,
       "group": "D",
       "title": "Assessment of visual landscape quality of urban green spaces using image-based metrics",
-      "author": "（Zhang et al.）",
+      "author": "Xudong Zhang, Ervine Shengwei Lin, Puay Yok Tan, Jinda Qi, Radha Waykool",
       "journal": "Urban Forestry & Urban Greening, 2023",
       "year": 2023,
-      "url": null,
+      "url": "https://doi.org/10.1016/j.eiar.2023.107120",
       "keywords": [
         "視覚的景観品質",
         "知覚的感覚次元",
@@ -5696,17 +5592,17 @@ svg { width:100%; height:100%; display:block; }
     }
   },
   "this_study_kws": [
-    "樹木配置",
-    "デジタルツイン",
+    "3D Gaussian Splatting",
     "遺伝的アルゴリズム",
     "CLIP",
+    "樹木配置",
     "緑視率",
-    "3D Gaussian Splatting"
+    "デジタルツイン"
   ],
   "meta": {
     "generated": "2026-04-03",
-    "total_papers": 49,
-    "total_kws": 151
+    "total_papers": 48,
+    "total_kws": 148
   }
 }</script>
 <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
@@ -5830,7 +5726,7 @@ nSel
   .on('mouseover',(ev,d)=>{
     const sl=SEC_LBL[d.section]||{en:d.section,ja:''};
     tt.innerHTML=`
-      <div class="tt-g" style="color:${d.thisStudy?'#fbbf24':d.color}">${d.thisStudy?'★ 本研究のキーワード':sl.en+' / '+sl.ja}</div>
+      <div class="tt-g" style="color:${d.thisStudy?'#fbbf24':d.color}">${d.thisStudy?'★ 興味のあるキーワード':sl.en+' / '+sl.ja}</div>
       <div class="tt-n">${d.label}</div>
       <div class="tt-c">${d.count}本の論文で使用 &nbsp;·&nbsp; クリックで論文一覧</div>`;
     tt.style.display='block';
@@ -5860,7 +5756,7 @@ function showKwPanel(d){
   const papersForKw=PAPERS.filter(p=>p.keywords.includes(d.label))
     .sort((a,b)=>b.relevance-a.relevance||a.year-b.year);
   const sl=SEC_LBL[d.section]||{en:d.section,ja:''};
-  const thisTag=d.thisStudy?`<div class="kw-this">★ 本研究のキーワード</div>`:'';
+  const thisTag=d.thisStudy?`<div class="kw-this">★ 私が興味のあるキーワード</div>`:'';
   const cards=papersForKw.map(p=>`
     <div class="pc" onclick="showPaperDetail('${p.id}','${d.label}')">
       <div class="pc-sec" style="color:${COL[p.group]||'#888'}">${(SEC_LBL[p.group]||{ja:p.group}).ja}</div>
