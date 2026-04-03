@@ -3,303 +3,4735 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Literature Graph – Tree Placement 3DGS</title>
+<title>Keyword Graph – Tree Placement 3DGS</title>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --bg-primary:   #0a0d14;
-  --bg-secondary: #111827;
-  --bg-tertiary:  #1e2535;
-  --bg-card:      #252d40;
-  --border:       #2d3a52;
-  --text-primary: #e2e8f0;
-  --text-sec:     #94a3b8;
-  --text-muted:   #64748b;
-  --accent:       #7c3aed;
-  --accent-l:     #a78bfa;
-  --accent-glow:  rgba(124,58,237,0.3);
+  --bg:      #080b12;
+  --bg2:     #101520;
+  --bg3:     #18202e;
+  --bg4:     #202840;
+  --bd:      #263047;
+  --tx:      #e2e8f0;
+  --tx2:     #8fa3bf;
+  --tx3:     #4a6080;
+  --gold:    #fbbf24;
+  --acc:     #7c3aed;
+  --acc2:    #a78bfa;
+  --accg:    rgba(124,58,237,.28);
 }
-body {
-  font-family: 'Segoe UI', system-ui, sans-serif;
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  display: flex;
-  height: 100vh;
-  overflow: hidden;
-}
+body { font-family: 'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--tx); display:flex; height:100vh; overflow:hidden; }
+
 /* ── Sidebar ── */
-#sidebar {
-  width: 295px; min-width: 295px; height: 100vh;
-  background: var(--bg-secondary);
-  border-right: 1px solid var(--border);
-  overflow-y: auto; padding: 16px 13px;
-  display: flex; flex-direction: column; gap: 14px;
-  scrollbar-width: thin; scrollbar-color: var(--border) transparent;
-}
-#sidebar::-webkit-scrollbar { width: 4px; }
-#sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-.sb-title {
-  font-size: 11px; font-weight: 700; color: var(--accent-l);
-  text-transform: uppercase; letter-spacing: 0.08em;
-  padding-bottom: 5px; border-bottom: 1px solid var(--border);
-}
-#sb-head h1 { font-size: 15px; font-weight: 700; margin-bottom: 3px; }
-#sb-head p  { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
-/* Search */
-#search-wrap { position: relative; }
-#search-input {
-  width: 100%; background: var(--bg-tertiary);
-  border: 1px solid var(--border); border-radius: 7px;
-  color: var(--text-primary); font-size: 12px;
-  padding: 7px 30px 7px 10px; outline: none;
-  transition: border-color 0.2s;
-}
-#search-input::placeholder { color: var(--text-muted); }
-#search-input:focus { border-color: var(--accent); }
-.s-icon { position: absolute; right: 9px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; }
-/* Section buttons */
-.sec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
-.sec-btn {
-  border: 1px solid var(--border); background: var(--bg-tertiary);
-  border-radius: 5px; padding: 5px 7px; cursor: pointer;
-  font-size: 10.5px; color: var(--text-sec); text-align: left;
-  transition: all 0.15s; line-height: 1.3;
-}
-.sec-btn .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
-.sec-btn.active { background: var(--bg-card); color: var(--text-primary); border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent-glow); }
-.sec-btn.inactive { opacity: 0.4; }
-/* Year range */
-.rng-wrap { display: flex; flex-direction: column; gap: 5px; }
-.rng-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); }
-.rng-container { position: relative; height: 18px; }
-.rng-container input[type=range] {
-  position: absolute; width: 100%; height: 4px;
-  -webkit-appearance: none; background: transparent;
-  pointer-events: none; top: 50%; transform: translateY(-50%);
-}
-.rng-container input[type=range]::-webkit-slider-thumb {
-  -webkit-appearance: none; width: 13px; height: 13px; border-radius: 50%;
-  background: var(--accent); cursor: pointer; pointer-events: all;
-  box-shadow: 0 0 0 2px var(--bg-secondary);
-}
-.rng-track { position: absolute; top: 50%; transform: translateY(-50%); height: 4px; width: 100%; background: var(--bg-tertiary); border-radius: 2px; }
-.rng-fill  { position: absolute; top: 50%; transform: translateY(-50%); height: 4px; background: var(--accent); border-radius: 2px; pointer-events: none; }
-/* Relevance filter */
-.rel-row { display: flex; gap: 4px; }
-.rel-btn {
-  flex: 1; padding: 5px 2px; font-size: 11px;
-  background: var(--bg-tertiary); border: 1px solid var(--border);
-  border-radius: 5px; color: var(--text-muted); cursor: pointer;
-  text-align: center; transition: all 0.15s;
-}
-.rel-btn.active { background: var(--bg-card); border-color: var(--accent); color: var(--accent-l); }
-/* Toggle */
-.tog-row { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: var(--text-sec); cursor: pointer; }
-.tog-sw {
-  width: 32px; height: 17px; border-radius: 9px;
-  background: var(--bg-tertiary); border: 1px solid var(--border);
-  position: relative; transition: background 0.2s; cursor: pointer; flex-shrink: 0;
-}
-.tog-sw::after {
-  content: ''; position: absolute; width: 11px; height: 11px;
-  border-radius: 50%; background: var(--text-muted);
-  top: 2px; left: 2px; transition: all 0.2s;
-}
-.tog-sw.on { background: var(--accent); border-color: var(--accent); }
-.tog-sw.on::after { left: 17px; background: white; }
-/* Stats */
-#stats { font-size: 11px; color: var(--text-muted); text-align: center; }
-#stats span { color: var(--accent-l); font-weight: 600; }
-/* Legend */
-.leg-item { display: flex; align-items: center; gap: 7px; font-size: 11px; color: var(--text-sec); padding: 2px 0; }
-.leg-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
-.leg-cnt { margin-left: auto; color: var(--text-muted); font-size: 10px; }
-/* Buttons */
-.btn-row { display: flex; gap: 5px; }
-.ctrl-btn {
-  flex: 1; padding: 6px 6px; font-size: 11px;
-  background: var(--bg-tertiary); border: 1px solid var(--border);
-  border-radius: 6px; color: var(--text-sec); cursor: pointer; transition: all 0.15s;
-}
-.ctrl-btn:hover { background: var(--bg-card); color: var(--text-primary); border-color: var(--accent); }
+#sb { width:280px; min-width:280px; height:100vh; background:var(--bg2); border-right:1px solid var(--bd); overflow-y:auto; padding:15px 12px; display:flex; flex-direction:column; gap:13px; scrollbar-width:thin; scrollbar-color:var(--bd) transparent; flex-shrink:0; }
+#sb::-webkit-scrollbar{width:3px}#sb::-webkit-scrollbar-thumb{background:var(--bd)}
+.sb-hd h1 { font-size:14px; font-weight:700; margin-bottom:3px; }
+.sb-hd p  { font-size:10.5px; color:var(--tx3); line-height:1.4; }
+.lbl { font-size:10px; font-weight:700; color:var(--acc2); text-transform:uppercase; letter-spacing:.08em; padding-bottom:4px; border-bottom:1px solid var(--bd); }
+
+/* search */
+.sw { position:relative; }
+.sw input { width:100%; background:var(--bg3); border:1px solid var(--bd); border-radius:6px; color:var(--tx); font-size:11.5px; padding:7px 28px 7px 9px; outline:none; transition:border-color .2s; }
+.sw input:focus { border-color:var(--acc); }
+.sw input::placeholder { color:var(--tx3); }
+.sw span { position:absolute; right:8px; top:50%; transform:translateY(-50%); color:var(--tx3); pointer-events:none; font-size:13px; }
+
+/* section buttons */
+.sg { display:grid; grid-template-columns:1fr 1fr; gap:5px; }
+.sb-btn { border:1px solid var(--bd); background:var(--bg3); border-radius:5px; padding:5px 7px; cursor:pointer; font-size:10px; color:var(--tx2); text-align:left; transition:all .15s; }
+.sb-btn .d { display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:4px; vertical-align:middle; }
+.sb-btn.on { background:var(--bg4); color:var(--tx); border-color:var(--acc); }
+.sb-btn.off { opacity:.38; }
+
+/* toggle */
+.tg-row { display:flex; align-items:center; gap:8px; font-size:11px; color:var(--tx2); cursor:pointer; }
+.tg { width:30px; height:16px; border-radius:8px; background:var(--bg3); border:1px solid var(--bd); position:relative; transition:background .2s; cursor:pointer; flex-shrink:0; }
+.tg::after { content:''; position:absolute; width:10px; height:10px; border-radius:50%; background:var(--tx3); top:2px; left:2px; transition:all .2s; }
+.tg.on { background:var(--acc); border-color:var(--acc); }
+.tg.on::after { left:16px; background:#fff; }
+
+/* stats */
+#stats { font-size:10.5px; color:var(--tx3); text-align:center; }
+#stats b { color:var(--acc2); }
+
+/* legend */
+.li { display:flex; align-items:center; gap:6px; font-size:10.5px; color:var(--tx2); padding:2px 0; }
+.ld { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.lc { margin-left:auto; color:var(--tx3); font-size:9.5px; }
+
+/* ctrl buttons */
+.br { display:flex; gap:5px; }
+.cb { flex:1; padding:6px 5px; font-size:10.5px; background:var(--bg3); border:1px solid var(--bd); border-radius:5px; color:var(--tx2); cursor:pointer; transition:all .15s; }
+.cb:hover { background:var(--bg4); color:var(--tx); border-color:var(--acc); }
+
 /* ── Graph ── */
-#graph-container { flex: 1; height: 100vh; background: var(--bg-primary); overflow: hidden; }
-#graph-svg { width: 100%; height: 100%; display: block; }
-/* ── Info Panel ── */
-#info-panel {
-  position: fixed; right: 0; top: 0; bottom: 0; width: 355px;
-  background: var(--bg-secondary); border-left: 1px solid var(--border);
-  transform: translateX(100%); transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
-  z-index: 50; overflow-y: auto;
-  scrollbar-width: thin; scrollbar-color: var(--border) transparent;
-}
-#info-panel.open { transform: translateX(0); }
-#info-inner { padding: 18px; }
-#close-panel {
-  float: right; background: var(--bg-tertiary); border: 1px solid var(--border);
-  color: var(--text-muted); border-radius: 50%;
-  width: 26px; height: 26px; font-size: 14px; cursor: pointer;
-  display: flex; align-items: center; justify-content: center; margin-bottom: 10px;
-}
-#close-panel:hover { color: var(--text-primary); border-color: var(--accent); }
-.i-badge {
-  display: inline-block; font-size: 9.5px; font-weight: 700;
-  padding: 2px 9px; border-radius: 99px; border: 1px solid;
-  margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em;
-}
-.i-title { font-size: 14px; font-weight: 700; line-height: 1.4; margin-bottom: 8px; }
-.i-meta { font-size: 11px; color: var(--text-sec); margin-bottom: 8px; line-height: 1.6; }
-.i-meta .i-jrn { display: block; font-style: italic; }
-.i-meta .i-yr  { font-weight: 600; color: var(--accent-l); }
-.i-stars { font-size: 13px; margin-bottom: 10px; }
-.i-stars .son  { color: #fbbf24; }
-.i-stars .soff { color: var(--text-muted); }
-.i-kws { margin-bottom: 12px; }
-.kw-chip {
-  display: inline-block; background: var(--bg-tertiary);
-  border: 1px solid var(--border); border-radius: 99px;
-  padding: 2px 8px; font-size: 10px; color: var(--text-sec); margin: 2px 2px;
-}
-.i-sec { margin-bottom: 11px; }
-.i-sec h3 { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 4px; }
-.i-sec p  { font-size: 11.5px; line-height: 1.75; color: var(--text-sec); }
-.doi-link {
-  display: inline-flex; align-items: center; gap: 4px;
-  font-size: 11.5px; color: var(--accent-l); text-decoration: none;
-  padding: 6px 11px; background: var(--bg-tertiary); border: 1px solid var(--border);
-  border-radius: 6px; transition: all 0.15s; margin-top: 6px;
-}
-.doi-link:hover { background: var(--bg-card); border-color: var(--accent); }
-.doi-none { font-size: 10.5px; color: var(--text-muted); font-style: italic; margin-top: 6px; display: block; }
+#gc { flex:1; height:100vh; background:var(--bg); overflow:hidden; }
+svg { width:100%; height:100%; display:block; }
+
+/* ── Right panel ── */
+#rp { position:fixed; right:0; top:0; bottom:0; width:360px; background:var(--bg2); border-left:1px solid var(--bd); transform:translateX(100%); transition:transform .28s cubic-bezier(.4,0,.2,1); z-index:50; overflow-y:auto; scrollbar-width:thin; scrollbar-color:var(--bd) transparent; }
+#rp::-webkit-scrollbar{width:3px}#rp::-webkit-scrollbar-thumb{background:var(--bd)}
+#rp.open { transform:translateX(0); }
+#rpi { padding:16px; }
+#rp-close { float:right; background:var(--bg3); border:1px solid var(--bd); color:var(--tx3); border-radius:50%; width:24px; height:24px; font-size:13px; cursor:pointer; display:flex; align-items:center; justify-content:center; margin-bottom:8px; }
+#rp-close:hover { color:var(--tx); border-color:var(--acc); }
+
+/* keyword header in panel */
+.kw-hd { margin-bottom:12px; }
+.kw-hd .kw-name { font-size:18px; font-weight:700; line-height:1.3; margin-bottom:4px; }
+.kw-hd .kw-meta { font-size:11px; color:var(--tx2); }
+.kw-hd .kw-this { display:inline-flex; align-items:center; gap:4px; font-size:10px; color:var(--gold); border:1px solid var(--gold); padding:2px 8px; border-radius:99px; margin-top:5px; }
+
+/* paper cards in panel */
+.pc-list { display:flex; flex-direction:column; gap:7px; margin-top:10px; }
+.pc { background:var(--bg3); border:1px solid var(--bd); border-radius:8px; padding:10px 11px; cursor:pointer; transition:all .15s; }
+.pc:hover { border-color:var(--acc); background:var(--bg4); }
+.pc .pc-sec { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; margin-bottom:3px; }
+.pc .pc-ttl { font-size:12px; font-weight:600; color:var(--tx); line-height:1.4; margin-bottom:3px; }
+.pc .pc-meta { font-size:10px; color:var(--tx3); }
+.pc .pc-stars .son { color:var(--gold); } .pc .pc-stars .soff { color:var(--tx3); }
+/* back button */
+.back-btn { display:flex; align-items:center; gap:5px; font-size:11px; color:var(--tx2); cursor:pointer; margin-bottom:12px; padding:5px 8px; background:var(--bg3); border:1px solid var(--bd); border-radius:5px; width:fit-content; }
+.back-btn:hover { color:var(--tx); border-color:var(--acc); }
+
+/* paper detail */
+.pd-badge { display:inline-block; font-size:9.5px; font-weight:700; padding:2px 9px; border-radius:99px; border:1px solid; margin-bottom:9px; text-transform:uppercase; letter-spacing:.05em; }
+.pd-ttl { font-size:14px; font-weight:700; line-height:1.4; margin-bottom:7px; }
+.pd-meta { font-size:11px; color:var(--tx2); line-height:1.6; margin-bottom:8px; }
+.pd-meta .pd-jrn { display:block; font-style:italic; }
+.pd-meta .pd-yr  { font-weight:600; color:var(--acc2); }
+.pd-stars { font-size:13px; margin-bottom:9px; }
+.pd-kws { margin-bottom:11px; }
+.kc { display:inline-block; background:var(--bg3); border:1px solid var(--bd); border-radius:99px; padding:2px 8px; font-size:9.5px; color:var(--tx2); margin:2px 2px; }
+.kc.hl { border-color:var(--gold); color:var(--gold); } /* highlight current keyword */
+.pd-sec { margin-bottom:10px; }
+.pd-sec h3 { font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--tx3); margin-bottom:3px; }
+.pd-sec p  { font-size:11px; line-height:1.75; color:var(--tx2); }
+.doi-a { display:inline-flex; align-items:center; gap:4px; font-size:11px; color:var(--acc2); text-decoration:none; padding:5px 10px; background:var(--bg3); border:1px solid var(--bd); border-radius:5px; transition:all .15s; margin-top:5px; }
+.doi-a:hover { background:var(--bg4); border-color:var(--acc); }
+.doi-n { font-size:10px; color:var(--tx3); font-style:italic; margin-top:5px; display:block; }
+
 /* ── Tooltip ── */
-#tooltip {
-  position: fixed; background: var(--bg-card); border: 1px solid var(--border);
-  border-radius: 8px; padding: 9px 12px; font-size: 11.5px;
-  pointer-events: none; max-width: 260px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.6); z-index: 100;
-  line-height: 1.5; display: none;
-}
-#tooltip .tt-sec  { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
-#tooltip .tt-ttl  { font-weight: 600; color: var(--text-primary); margin-bottom: 2px; }
-#tooltip .tt-meta { color: var(--text-muted); font-size: 10.5px; margin-bottom: 3px; }
-#tooltip .son { color: #fbbf24; }
-#tooltip .soff{ color: var(--text-muted); }
-.node-label { pointer-events: none; font-family: 'Segoe UI', system-ui, sans-serif; }
+#tt { position:fixed; background:var(--bg4); border:1px solid var(--bd); border-radius:7px; padding:8px 11px; font-size:11px; pointer-events:none; max-width:240px; box-shadow:0 6px 20px rgba(0,0,0,.6); z-index:100; display:none; line-height:1.5; }
+#tt .tt-n { font-weight:700; color:var(--tx); margin-bottom:2px; }
+#tt .tt-c { color:var(--tx3); font-size:10px; }
+#tt .tt-g { font-size:9.5px; text-transform:uppercase; letter-spacing:.04em; margin-bottom:2px; }
+.nl { pointer-events:none; font-family:'Segoe UI',system-ui,sans-serif; }
 </style>
 </head>
 <body>
 
-<div id="sidebar">
-  <div id="sb-head">
-    <h1>Literature Graph</h1>
-    <p>3DGS × 樹木配置最適化 先行研究マップ</p>
+<div id="sb">
+  <div class="sb-hd">
+    <h1>Keyword Graph</h1>
+    <p>3DGS × 樹木配置最適化 研究キーワードマップ</p>
   </div>
 
   <div>
-    <div class="sb-title">Search</div>
-    <div id="search-wrap">
-      <input type="text" id="search-input" placeholder="タイトル・著者・キーワード…">
-      <span class="s-icon">&#9906;</span>
+    <div class="lbl">Search</div>
+    <div class="sw">
+      <input type="text" id="q" placeholder="キーワード検索…">
+      <span>&#9906;</span>
     </div>
   </div>
 
   <div>
-    <div class="sb-title" style="margin-bottom:7px">Section</div>
-    <div class="sec-grid" id="section-filters"></div>
+    <div class="lbl" style="margin-bottom:7px">Section</div>
+    <div class="sg" id="sec-btns"></div>
   </div>
 
   <div>
-    <div class="sb-title" style="margin-bottom:7px">Year Range</div>
-    <div class="rng-wrap">
-      <div class="rng-container">
-        <div class="rng-track"></div>
-        <div class="rng-fill" id="rng-fill"></div>
-        <input type="range" id="year-min" min="1987" max="2026" value="1987">
-        <input type="range" id="year-max" min="1987" max="2026" value="2026">
-      </div>
-      <div class="rng-labels">
-        <span id="yr-min-lbl">1987</span>
-        <span id="yr-max-lbl">2026</span>
-      </div>
-    </div>
-  </div>
-
-  <div>
-    <div class="sb-title" style="margin-bottom:7px">Min Relevance</div>
-    <div class="rel-row" id="rel-filters"></div>
-  </div>
-
-  <div>
-    <div class="sb-title" style="margin-bottom:7px">Options</div>
-    <label class="tog-row">
-      <div class="tog-sw" id="kw-toggle"></div>
-      <span>Show keyword edges</span>
+    <div class="lbl" style="margin-bottom:7px">Options</div>
+    <label class="tg-row" style="margin-bottom:8px">
+      <div class="tg" id="tg-rare"></div>
+      <span>レアキーワードも表示 (1回のみ)</span>
+    </label>
+    <label class="tg-row">
+      <div class="tg" id="tg-this"></div>
+      <span>本研究キーワードを強調</span>
     </label>
   </div>
 
-  <div id="stats">Showing <span id="vis-count">49</span> / 49 papers</div>
+  <div id="stats">キーワード <b id="kw-cnt">27</b> / 論文 49本</div>
 
   <div>
-    <div class="sb-title" style="margin-bottom:7px">Legend</div>
-    <div id="legend-secs"></div>
-    <div style="margin-top:9px">
-      <div style="font-size:10px;color:var(--text-muted);margin-bottom:5px">Node Size = Relevance</div>
-      <svg width="130" height="28" overflow="visible">
-        <circle cx="10" cy="22" r="8"  fill="#475569" opacity="0.8"/>
-        <text x="10" y="10" text-anchor="middle" fill="#64748b" font-size="8">★2</text>
-        <circle cx="36" cy="20" r="10" fill="#475569" opacity="0.8"/>
-        <text x="36" y="8"  text-anchor="middle" fill="#64748b" font-size="8">★3</text>
-        <circle cx="66" cy="18" r="12" fill="#475569" opacity="0.8"/>
-        <text x="66" y="4"  text-anchor="middle" fill="#64748b" font-size="8">★4</text>
-        <circle cx="100" cy="16" r="14" fill="#475569" opacity="0.8"/>
-        <text x="100" y="1"  text-anchor="middle" fill="#94a3b8" font-size="8">★5</text>
-      </svg>
+    <div class="lbl" style="margin-bottom:7px">Legend</div>
+    <div id="leg"></div>
+    <div style="margin-top:9px;font-size:10px;color:var(--tx3)">ノードサイズ = 使用論文数</div>
+    <div style="margin-top:5px;font-size:10px;color:var(--tx3)">エッジ太さ = 共起論文数</div>
+    <div style="margin-top:5px;display:flex;align-items:center;gap:5px;font-size:10px;color:var(--gold)">
+      <span style="width:10px;height:10px;border-radius:50%;border:2px solid var(--gold);display:inline-block"></span>
+      本研究のキーワード
     </div>
   </div>
 
-  <div class="btn-row">
-    <button class="ctrl-btn" id="btn-reset">&#x27F2; Reset View</button>
-    <button class="ctrl-btn" id="btn-pause">&#9646;&#9646; Pause</button>
+  <div class="br">
+    <button class="cb" id="btn-rst">&#x27F2; Reset</button>
+    <button class="cb" id="btn-ps">&#9646;&#9646; Pause</button>
   </div>
 </div>
 
-<div id="graph-container">
-  <svg id="graph-svg"></svg>
-</div>
+<div id="gc"><svg id="gs"></svg></div>
 
-<div id="info-panel">
-  <div id="info-inner">
-    <button id="close-panel">&#x2715;</button>
-    <div id="info-content"></div>
-  </div>
-</div>
+<div id="rp"><div id="rpi">
+  <button id="rp-close">&#x2715;</button>
+  <div id="rp-content"></div>
+</div></div>
 
-<div id="tooltip"></div>
+<div id="tt"></div>
 
-<script id="graph-data" type="application/json">
-{
-  "nodes": [
+<script id="gd" type="application/json">{
+  "kw_nodes": [
     {
-      "id": "this-study",
-      "no": 0,
-      "group": "CENTER",
-      "title": "本研究 / This Study",
-      "author": "Dansuke et al.",
-      "journal": "Environment and Planning B",
-      "year": 2025,
-      "url": null,
-      "keywords": [
-        "3D Gaussian Splatting",
-        "遺伝的アルゴリズム",
-        "緑視率",
-        "CLIP",
-        "樹木配置",
-        "デジタルツイン"
-      ],
-      "summary": "3DGSデジタルツイン上で遺伝的アルゴリズムとCLIP感性評価を用いた樹木配置最適化手法を提案。GVI最大化と個人化された感性評価を統合。",
-      "relationship": "",
-      "relevance": 5
+      "id": "kw-緑視率",
+      "label": "緑視率",
+      "count": 10,
+      "rare": false,
+      "thisStudy": true,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-1",
+        "paper-6",
+        "paper-27",
+        "paper-36",
+        "paper-38",
+        "paper-39",
+        "paper-40",
+        "paper-43",
+        "paper-45",
+        "paper-47"
+      ]
     },
+    {
+      "id": "kw-樹木配置",
+      "label": "樹木配置",
+      "count": 8,
+      "rare": false,
+      "thisStudy": true,
+      "section": "MIX",
+      "color": "#94a3b8",
+      "papers": [
+        "paper-12",
+        "paper-13",
+        "paper-15",
+        "paper-19",
+        "paper-36",
+        "paper-37",
+        "paper-40",
+        "paper-42"
+      ]
+    },
+    {
+      "id": "kw-3D Gaussian Splatting",
+      "label": "3D Gaussian Splatting",
+      "count": 4,
+      "rare": false,
+      "thisStudy": true,
+      "section": "C",
+      "color": "#a78bfa",
+      "papers": [
+        "paper-26",
+        "paper-29",
+        "paper-30",
+        "paper-31"
+      ]
+    },
+    {
+      "id": "kw-遺伝的アルゴリズム",
+      "label": "遺伝的アルゴリズム",
+      "count": 3,
+      "rare": false,
+      "thisStudy": true,
+      "section": "B",
+      "color": "#60a5fa",
+      "papers": [
+        "paper-13",
+        "paper-19",
+        "paper-23"
+      ]
+    },
+    {
+      "id": "kw-デジタルツイン",
+      "label": "デジタルツイン",
+      "count": 2,
+      "rare": false,
+      "thisStudy": true,
+      "section": "C",
+      "color": "#a78bfa",
+      "papers": [
+        "paper-32",
+        "paper-33"
+      ]
+    },
+    {
+      "id": "kw-Green View Index",
+      "label": "Green View Index",
+      "count": 4,
+      "rare": false,
+      "thisStudy": false,
+      "section": "A",
+      "color": "#4ade80",
+      "papers": [
+        "paper-2",
+        "paper-3",
+        "paper-8",
+        "paper-14"
+      ]
+    },
+    {
+      "id": "kw-CFD",
+      "label": "CFD",
+      "count": 4,
+      "rare": false,
+      "thisStudy": false,
+      "section": "MIX",
+      "color": "#94a3b8",
+      "papers": [
+        "paper-12",
+        "paper-29",
+        "paper-37",
+        "paper-42"
+      ]
+    },
+    {
+      "id": "kw-景観評価",
+      "label": "景観評価",
+      "count": 3,
+      "rare": false,
+      "thisStudy": false,
+      "section": "A",
+      "color": "#4ade80",
+      "papers": [
+        "paper-1",
+        "paper-2",
+        "paper-44"
+      ]
+    },
+    {
+      "id": "kw-GIS",
+      "label": "GIS",
+      "count": 3,
+      "rare": false,
+      "thisStudy": false,
+      "section": "B",
+      "color": "#60a5fa",
+      "papers": [
+        "paper-10",
+        "paper-20",
+        "paper-22"
+      ]
+    },
+    {
+      "id": "kw-MRT",
+      "label": "MRT",
+      "count": 3,
+      "rare": false,
+      "thisStudy": false,
+      "section": "B",
+      "color": "#60a5fa",
+      "papers": [
+        "paper-13",
+        "paper-24",
+        "paper-37"
+      ]
+    },
+    {
+      "id": "kw-NSGA-II",
+      "label": "NSGA-II",
+      "count": 3,
+      "rare": false,
+      "thisStudy": false,
+      "section": "B",
+      "color": "#60a5fa",
+      "papers": [
+        "paper-14",
+        "paper-22",
+        "paper-24"
+      ]
+    },
+    {
+      "id": "kw-UTCI",
+      "label": "UTCI",
+      "count": 3,
+      "rare": false,
+      "thisStudy": false,
+      "section": "B",
+      "color": "#60a5fa",
+      "papers": [
+        "paper-14",
+        "paper-16",
+        "paper-24"
+      ]
+    },
+    {
+      "id": "kw-街路樹",
+      "label": "街路樹",
+      "count": 3,
+      "rare": false,
+      "thisStudy": false,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-25",
+        "paper-43",
+        "paper-44"
+      ]
+    },
+    {
+      "id": "kw-Google Street View",
+      "label": "Google Street View",
+      "count": 2,
+      "rare": false,
+      "thisStudy": false,
+      "section": "MIX",
+      "color": "#94a3b8",
+      "papers": [
+        "paper-2",
+        "paper-48"
+      ]
+    },
+    {
+      "id": "kw-都市植生",
+      "label": "都市植生",
+      "count": 2,
+      "rare": false,
+      "thisStudy": false,
+      "section": "MIX",
+      "color": "#94a3b8",
+      "papers": [
+        "paper-4",
+        "paper-26"
+      ]
+    },
+    {
+      "id": "kw-LiDAR",
+      "label": "LiDAR",
+      "count": 2,
+      "rare": false,
+      "thisStudy": false,
+      "section": "A",
+      "color": "#4ade80",
+      "papers": [
+        "paper-5",
+        "paper-7"
+      ]
+    },
+    {
+      "id": "kw-深層学習",
+      "label": "深層学習",
+      "count": 2,
+      "rare": false,
+      "thisStudy": false,
+      "section": "MIX",
+      "color": "#94a3b8",
+      "papers": [
+        "paper-8",
+        "paper-26"
+      ]
+    },
+    {
+      "id": "kw-GVI",
+      "label": "GVI",
+      "count": 2,
+      "rare": false,
+      "thisStudy": false,
+      "section": "MIX",
+      "color": "#94a3b8",
+      "papers": [
+        "paper-9",
+        "paper-35"
+      ]
+    },
+    {
+      "id": "kw-エージェントベースモデル",
+      "label": "エージェントベースモデル",
+      "count": 2,
+      "rare": false,
+      "thisStudy": false,
+      "section": "MIX",
+      "color": "#94a3b8",
+      "papers": [
+        "paper-13",
+        "paper-32"
+      ]
+    },
+    {
+      "id": "kw-多目的最適化",
+      "label": "多目的最適化",
+      "count": 2,
+      "rare": false,
+      "thisStudy": false,
+      "section": "MIX",
+      "color": "#94a3b8",
+      "papers": [
+        "paper-14",
+        "paper-36"
+      ]
+    },
+    {
+      "id": "kw-平均放射温度",
+      "label": "平均放射温度",
+      "count": 2,
+      "rare": false,
+      "thisStudy": false,
+      "section": "B",
+      "color": "#60a5fa",
+      "papers": [
+        "paper-15",
+        "paper-17"
+      ]
+    },
+    {
+      "id": "kw-樹木配置最適化",
+      "label": "樹木配置最適化",
+      "count": 2,
+      "rare": false,
+      "thisStudy": false,
+      "section": "B",
+      "color": "#60a5fa",
+      "papers": [
+        "paper-17",
+        "paper-21"
+      ]
+    },
+    {
+      "id": "kw-NeRF",
+      "label": "NeRF",
+      "count": 2,
+      "rare": false,
+      "thisStudy": false,
+      "section": "C",
+      "color": "#a78bfa",
+      "papers": [
+        "paper-28",
+        "paper-34"
+      ]
+    },
+    {
+      "id": "kw-ドローン",
+      "label": "ドローン",
+      "count": 2,
+      "rare": false,
+      "thisStudy": false,
+      "section": "C",
+      "color": "#a78bfa",
+      "papers": [
+        "paper-28",
+        "paper-30"
+      ]
+    },
+    {
+      "id": "kw-VR",
+      "label": "VR",
+      "count": 2,
+      "rare": false,
+      "thisStudy": false,
+      "section": "MIX",
+      "color": "#94a3b8",
+      "papers": [
+        "paper-34",
+        "paper-44"
+      ]
+    },
+    {
+      "id": "kw-パノラマ画像",
+      "label": "パノラマ画像",
+      "count": 2,
+      "rare": false,
+      "thisStudy": false,
+      "section": "MIX",
+      "color": "#94a3b8",
+      "papers": [
+        "paper-35",
+        "paper-48"
+      ]
+    },
+    {
+      "id": "kw-最適化",
+      "label": "最適化",
+      "count": 2,
+      "rare": false,
+      "thisStudy": false,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-37",
+        "paper-42"
+      ]
+    },
+    {
+      "id": "kw-視野",
+      "label": "視野",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "A",
+      "color": "#4ade80",
+      "papers": [
+        "paper-1"
+      ]
+    },
+    {
+      "id": "kw-フィールド実験",
+      "label": "フィールド実験",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "A",
+      "color": "#4ade80",
+      "papers": [
+        "paper-1"
+      ]
+    },
+    {
+      "id": "kw-街路緑化",
+      "label": "街路緑化",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "A",
+      "color": "#4ade80",
+      "papers": [
+        "paper-2"
+      ]
+    },
+    {
+      "id": "kw-sGVI",
+      "label": "sGVI",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "A",
+      "color": "#4ade80",
+      "papers": [
+        "paper-3"
+      ]
+    },
+    {
+      "id": "kw-NDVI",
+      "label": "NDVI",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "A",
+      "color": "#4ade80",
+      "papers": [
+        "paper-3"
+      ]
+    },
+    {
+      "id": "kw-ボロノイ分割",
+      "label": "ボロノイ分割",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "A",
+      "color": "#4ade80",
+      "papers": [
+        "paper-3"
+      ]
+    },
+    {
+      "id": "kw-都市緑化指標",
+      "label": "都市緑化指標",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "A",
+      "color": "#4ade80",
+      "papers": [
+        "paper-3"
+      ]
+    },
+    {
+      "id": "kw-Floor Green View Index",
+      "label": "Floor Green View Index",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "A",
+      "color": "#4ade80",
+      "papers": [
+        "paper-4"
+      ]
+    },
+    {
+      "id": "kw-3D緑視認性",
+      "label": "3D緑視認性",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "A",
+      "color": "#4ade80",
+      "papers": [
+        "paper-4"
+      ]
+    },
+    {
+      "id": "kw-建物階別可視領域",
+      "label": "建物階別可視領域",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "A",
+      "color": "#4ade80",
+      "papers": [
+        "paper-4"
+      ]
+    },
+    {
+      "id": "kw-Green Window View Index",
+      "label": "Green Window View Index",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "A",
+      "color": "#4ade80",
+      "papers": [
+        "paper-5"
+      ]
+    },
+    {
+      "id": "kw-3D都市モデル",
+      "label": "3D都市モデル",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "A",
+      "color": "#4ade80",
+      "papers": [
+        "paper-5"
+      ]
+    },
+    {
+      "id": "kw-CityGML",
+      "label": "CityGML",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "A",
+      "color": "#4ade80",
+      "papers": [
+        "paper-5"
+      ]
+    },
+    {
+      "id": "kw-OpenGLレンダリング",
+      "label": "OpenGLレンダリング",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "A",
+      "color": "#4ade80",
+      "papers": [
+        "paper-5"
+      ]
+    },
+    {
+      "id": "kw-モバイルレーザスキャニング",
+      "label": "モバイルレーザスキャニング",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "A",
+      "color": "#4ade80",
+      "papers": [
+        "paper-6"
+      ]
+    },
+    {
+      "id": "kw-3D点群",
+      "label": "3D点群",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "A",
+      "color": "#4ade80",
+      "papers": [
+        "paper-6"
+      ]
+    },
+    {
+      "id": "kw-仮想カメラ",
+      "label": "仮想カメラ",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "A",
+      "color": "#4ade80",
+      "papers": [
+        "paper-6"
+      ]
+    },
+    {
+      "id": "kw-PointNet++",
+      "label": "PointNet++",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "A",
+      "color": "#4ade80",
+      "papers": [
+        "paper-6"
+      ]
+    },
+    {
+      "id": "kw-Projected Point GVI",
+      "label": "Projected Point GVI",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "A",
+      "color": "#4ade80",
+      "papers": [
+        "paper-7"
+      ]
+    },
+    {
+      "id": "kw-円筒射影",
+      "label": "円筒射影",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "A",
+      "color": "#4ade80",
+      "papers": [
+        "paper-7"
+      ]
+    },
+    {
+      "id": "kw-都市規模GVI",
+      "label": "都市規模GVI",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "A",
+      "color": "#4ade80",
+      "papers": [
+        "paper-7"
+      ]
+    },
+    {
+      "id": "kw-最適経路",
+      "label": "最適経路",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "A",
+      "color": "#4ade80",
+      "papers": [
+        "paper-8"
+      ]
+    },
+    {
+      "id": "kw-セマンティックセグメンテーション",
+      "label": "セマンティックセグメンテーション",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "A",
+      "color": "#4ade80",
+      "papers": [
+        "paper-8"
+      ]
+    },
+    {
+      "id": "kw-サンプリング手法",
+      "label": "サンプリング手法",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "A",
+      "color": "#4ade80",
+      "papers": [
+        "paper-9"
+      ]
+    },
+    {
+      "id": "kw-Green View Circle",
+      "label": "Green View Circle",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "A",
+      "color": "#4ade80",
+      "papers": [
+        "paper-9"
+      ]
+    },
+    {
+      "id": "kw-可視領域分析",
+      "label": "可視領域分析",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "A",
+      "color": "#4ade80",
+      "papers": [
+        "paper-10"
+      ]
+    },
+    {
+      "id": "kw-視覚的露出度",
+      "label": "視覚的露出度",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "A",
+      "color": "#4ade80",
+      "papers": [
+        "paper-10"
+      ]
+    },
+    {
+      "id": "kw-都市緑化",
+      "label": "都市緑化",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "A",
+      "color": "#4ade80",
+      "papers": [
+        "paper-10"
+      ]
+    },
+    {
+      "id": "kw-距離減衰",
+      "label": "距離減衰",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "A",
+      "color": "#4ade80",
+      "papers": [
+        "paper-10"
+      ]
+    },
+    {
+      "id": "kw-Line-based GVI",
+      "label": "Line-based GVI",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "A",
+      "color": "#4ade80",
+      "papers": [
+        "paper-11"
+      ]
+    },
+    {
+      "id": "kw-リモートセンシング",
+      "label": "リモートセンシング",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "A",
+      "color": "#4ade80",
+      "papers": [
+        "paper-11"
+      ]
+    },
+    {
+      "id": "kw-3Dシーン再構成",
+      "label": "3Dシーン再構成",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "A",
+      "color": "#4ade80",
+      "papers": [
+        "paper-11"
+      ]
+    },
+    {
+      "id": "kw-多目的遺伝的アルゴリズム",
+      "label": "多目的遺伝的アルゴリズム",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "B",
+      "color": "#60a5fa",
+      "papers": [
+        "paper-12"
+      ]
+    },
+    {
+      "id": "kw-屋外熱的快適性",
+      "label": "屋外熱的快適性",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "B",
+      "color": "#60a5fa",
+      "papers": [
+        "paper-12"
+      ]
+    },
+    {
+      "id": "kw-歩行頻度",
+      "label": "歩行頻度",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "B",
+      "color": "#60a5fa",
+      "papers": [
+        "paper-13"
+      ]
+    },
+    {
+      "id": "kw-Tree Shape Surfaces",
+      "label": "Tree Shape Surfaces",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "B",
+      "color": "#60a5fa",
+      "papers": [
+        "paper-14"
+      ]
+    },
+    {
+      "id": "kw-NNサロゲート",
+      "label": "NNサロゲート",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "B",
+      "color": "#60a5fa",
+      "papers": [
+        "paper-15"
+      ]
+    },
+    {
+      "id": "kw-ILS",
+      "label": "ILS",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "B",
+      "color": "#60a5fa",
+      "papers": [
+        "paper-15"
+      ]
+    },
+    {
+      "id": "kw-緑のインフラ最適化",
+      "label": "緑のインフラ最適化",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "B",
+      "color": "#60a5fa",
+      "papers": [
+        "paper-16"
+      ]
+    },
+    {
+      "id": "kw-ACO",
+      "label": "ACO",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "B",
+      "color": "#60a5fa",
+      "papers": [
+        "paper-16"
+      ]
+    },
+    {
+      "id": "kw-樹木計算モデル",
+      "label": "樹木計算モデル",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "B",
+      "color": "#60a5fa",
+      "papers": [
+        "paper-16"
+      ]
+    },
+    {
+      "id": "kw-メタヒューリスティクス",
+      "label": "メタヒューリスティクス",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "B",
+      "color": "#60a5fa",
+      "papers": [
+        "paper-17"
+      ]
+    },
+    {
+      "id": "kw-SOLWEIG",
+      "label": "SOLWEIG",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "B",
+      "color": "#60a5fa",
+      "papers": [
+        "paper-17"
+      ]
+    },
+    {
+      "id": "kw-日射緩和",
+      "label": "日射緩和",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "B",
+      "color": "#60a5fa",
+      "papers": [
+        "paper-18"
+      ]
+    },
+    {
+      "id": "kw-進化的アルゴリズム",
+      "label": "進化的アルゴリズム",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "B",
+      "color": "#60a5fa",
+      "papers": [
+        "paper-18"
+      ]
+    },
+    {
+      "id": "kw-Galapagos",
+      "label": "Galapagos",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "B",
+      "color": "#60a5fa",
+      "papers": [
+        "paper-18"
+      ]
+    },
+    {
+      "id": "kw-樹木位置",
+      "label": "樹木位置",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "B",
+      "color": "#60a5fa",
+      "papers": [
+        "paper-18"
+      ]
+    },
+    {
+      "id": "kw-都市公園",
+      "label": "都市公園",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "B",
+      "color": "#60a5fa",
+      "papers": [
+        "paper-19"
+      ]
+    },
+    {
+      "id": "kw-熱ストレス",
+      "label": "熱ストレス",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "B",
+      "color": "#60a5fa",
+      "papers": [
+        "paper-19"
+      ]
+    },
+    {
+      "id": "kw-蟻コロニー最適化",
+      "label": "蟻コロニー最適化",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "B",
+      "color": "#60a5fa",
+      "papers": [
+        "paper-20"
+      ]
+    },
+    {
+      "id": "kw-樹木日陰",
+      "label": "樹木日陰",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "B",
+      "color": "#60a5fa",
+      "papers": [
+        "paper-20"
+      ]
+    },
+    {
+      "id": "kw-3D分析",
+      "label": "3D分析",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "B",
+      "color": "#60a5fa",
+      "papers": [
+        "paper-20"
+      ]
+    },
+    {
+      "id": "kw-3D樹冠形状",
+      "label": "3D樹冠形状",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "B",
+      "color": "#60a5fa",
+      "papers": [
+        "paper-21"
+      ]
+    },
+    {
+      "id": "kw-時間的発達",
+      "label": "時間的発達",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "B",
+      "color": "#60a5fa",
+      "papers": [
+        "paper-21"
+      ]
+    },
+    {
+      "id": "kw-3D Isovist",
+      "label": "3D Isovist",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "B",
+      "color": "#60a5fa",
+      "papers": [
+        "paper-22"
+      ]
+    },
+    {
+      "id": "kw-都市公園設計",
+      "label": "都市公園設計",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "B",
+      "color": "#60a5fa",
+      "papers": [
+        "paper-22"
+      ]
+    },
+    {
+      "id": "kw-パレートフロンティア",
+      "label": "パレートフロンティア",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "B",
+      "color": "#60a5fa",
+      "papers": [
+        "paper-22"
+      ]
+    },
+    {
+      "id": "kw-都市緑地",
+      "label": "都市緑地",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "B",
+      "color": "#60a5fa",
+      "papers": [
+        "paper-23"
+      ]
+    },
+    {
+      "id": "kw-空間最適化",
+      "label": "空間最適化",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "B",
+      "color": "#60a5fa",
+      "papers": [
+        "paper-23"
+      ]
+    },
+    {
+      "id": "kw-地表面温度",
+      "label": "地表面温度",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "B",
+      "color": "#60a5fa",
+      "papers": [
+        "paper-23"
+      ]
+    },
+    {
+      "id": "kw-LAI",
+      "label": "LAI",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "B",
+      "color": "#60a5fa",
+      "papers": [
+        "paper-24"
+      ]
+    },
+    {
+      "id": "kw-Grasshopper",
+      "label": "Grasshopper",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "B",
+      "color": "#60a5fa",
+      "papers": [
+        "paper-24"
+      ]
+    },
+    {
+      "id": "kw-Ladybug Tools",
+      "label": "Ladybug Tools",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "B",
+      "color": "#60a5fa",
+      "papers": [
+        "paper-24"
+      ]
+    },
+    {
+      "id": "kw-Tmrt",
+      "label": "Tmrt",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "B",
+      "color": "#60a5fa",
+      "papers": [
+        "paper-25"
+      ]
+    },
+    {
+      "id": "kw-歩行者熱的快適性",
+      "label": "歩行者熱的快適性",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "B",
+      "color": "#60a5fa",
+      "papers": [
+        "paper-25"
+      ]
+    },
+    {
+      "id": "kw-S3PVI",
+      "label": "S3PVI",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "C",
+      "color": "#a78bfa",
+      "papers": [
+        "paper-26"
+      ]
+    },
+    {
+      "id": "kw-季節動態",
+      "label": "季節動態",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "C",
+      "color": "#a78bfa",
+      "papers": [
+        "paper-26"
+      ]
+    },
+    {
+      "id": "kw-都市デジタルツイン",
+      "label": "都市デジタルツイン",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "C",
+      "color": "#a78bfa",
+      "papers": [
+        "paper-27"
+      ]
+    },
+    {
+      "id": "kw-視覚的知覚",
+      "label": "視覚的知覚",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "C",
+      "color": "#a78bfa",
+      "papers": [
+        "paper-27"
+      ]
+    },
+    {
+      "id": "kw-シンガポール",
+      "label": "シンガポール",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "C",
+      "color": "#a78bfa",
+      "papers": [
+        "paper-27"
+      ]
+    },
+    {
+      "id": "kw-ランドスケープアーキテクチャ",
+      "label": "ランドスケープアーキテクチャ",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "C",
+      "color": "#a78bfa",
+      "papers": [
+        "paper-28"
+      ]
+    },
+    {
+      "id": "kw-Instant-NGP",
+      "label": "Instant-NGP",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "C",
+      "color": "#a78bfa",
+      "papers": [
+        "paper-28"
+      ]
+    },
+    {
+      "id": "kw-都市微気候",
+      "label": "都市微気候",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "C",
+      "color": "#a78bfa",
+      "papers": [
+        "paper-29"
+      ]
+    },
+    {
+      "id": "kw-植生点群",
+      "label": "植生点群",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "C",
+      "color": "#a78bfa",
+      "papers": [
+        "paper-29"
+      ]
+    },
+    {
+      "id": "kw-林業",
+      "label": "林業",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "C",
+      "color": "#a78bfa",
+      "papers": [
+        "paper-30"
+      ]
+    },
+    {
+      "id": "kw-樹冠高マップ",
+      "label": "樹冠高マップ",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "C",
+      "color": "#a78bfa",
+      "papers": [
+        "paper-30"
+      ]
+    },
+    {
+      "id": "kw-都市シーン理解",
+      "label": "都市シーン理解",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "C",
+      "color": "#a78bfa",
+      "papers": [
+        "paper-31"
+      ]
+    },
+    {
+      "id": "kw-セマンティック再構成",
+      "label": "セマンティック再構成",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "C",
+      "color": "#a78bfa",
+      "papers": [
+        "paper-31"
+      ]
+    },
+    {
+      "id": "kw-都市林",
+      "label": "都市林",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "C",
+      "color": "#a78bfa",
+      "papers": [
+        "paper-32"
+      ]
+    },
+    {
+      "id": "kw-スマートシティ",
+      "label": "スマートシティ",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "C",
+      "color": "#a78bfa",
+      "papers": [
+        "paper-33"
+      ]
+    },
+    {
+      "id": "kw-都市計画",
+      "label": "都市計画",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "C",
+      "color": "#a78bfa",
+      "papers": [
+        "paper-33"
+      ]
+    },
+    {
+      "id": "kw-植生",
+      "label": "植生",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "C",
+      "color": "#a78bfa",
+      "papers": [
+        "paper-33"
+      ]
+    },
+    {
+      "id": "kw-都市庭園設計",
+      "label": "都市庭園設計",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "C",
+      "color": "#a78bfa",
+      "papers": [
+        "paper-34"
+      ]
+    },
+    {
+      "id": "kw-3D再構成",
+      "label": "3D再構成",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "C",
+      "color": "#a78bfa",
+      "papers": [
+        "paper-34"
+      ]
+    },
+    {
+      "id": "kw-視覚的景観品質",
+      "label": "視覚的景観品質",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "D",
+      "color": "#fb923c",
+      "papers": [
+        "paper-35"
+      ]
+    },
+    {
+      "id": "kw-知覚的感覚次元",
+      "label": "知覚的感覚次元",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "D",
+      "color": "#fb923c",
+      "papers": [
+        "paper-35"
+      ]
+    },
+    {
+      "id": "kw-熱放射環境",
+      "label": "熱放射環境",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-36"
+      ]
+    },
+    {
+      "id": "kw-天空率",
+      "label": "天空率",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-36"
+      ]
+    },
+    {
+      "id": "kw-パレート解",
+      "label": "パレート解",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-36"
+      ]
+    },
+    {
+      "id": "kw-暑熱適応",
+      "label": "暑熱適応",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-37"
+      ]
+    },
+    {
+      "id": "kw-ヒートアイランド",
+      "label": "ヒートアイランド",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-37"
+      ]
+    },
+    {
+      "id": "kw-全方位視野",
+      "label": "全方位視野",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-38"
+      ]
+    },
+    {
+      "id": "kw-立体角",
+      "label": "立体角",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-38"
+      ]
+    },
+    {
+      "id": "kw-植栽計画シミュレーション",
+      "label": "植栽計画シミュレーション",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-38"
+      ]
+    },
+    {
+      "id": "kw-全方位視認率",
+      "label": "全方位視認率",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-39"
+      ]
+    },
+    {
+      "id": "kw-自己組織化マップ",
+      "label": "自己組織化マップ",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-39"
+      ]
+    },
+    {
+      "id": "kw-感性評価予測",
+      "label": "感性評価予測",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-39"
+      ]
+    },
+    {
+      "id": "kw-モンテカルロシミュレーション",
+      "label": "モンテカルロシミュレーション",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-40"
+      ]
+    },
+    {
+      "id": "kw-GPGPU",
+      "label": "GPGPU",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-40"
+      ]
+    },
+    {
+      "id": "kw-CGモデル",
+      "label": "CGモデル",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-40"
+      ]
+    },
+    {
+      "id": "kw-立体緑視率",
+      "label": "立体緑視率",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-41"
+      ]
+    },
+    {
+      "id": "kw-都市空間",
+      "label": "都市空間",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-41"
+      ]
+    },
+    {
+      "id": "kw-3次元",
+      "label": "3次元",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-41"
+      ]
+    },
+    {
+      "id": "kw-緑景観評価",
+      "label": "緑景観評価",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-41"
+      ]
+    },
+    {
+      "id": "kw-随伴変数法",
+      "label": "随伴変数法",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-42"
+      ]
+    },
+    {
+      "id": "kw-風速低減",
+      "label": "風速低減",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-42"
+      ]
+    },
+    {
+      "id": "kw-植栽デザイン",
+      "label": "植栽デザイン",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-43"
+      ]
+    },
+    {
+      "id": "kw-歩行者快適性",
+      "label": "歩行者快適性",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-43"
+      ]
+    },
+    {
+      "id": "kw-樹木間隔",
+      "label": "樹木間隔",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-44"
+      ]
+    },
+    {
+      "id": "kw-植栽形態",
+      "label": "植栽形態",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-45"
+      ]
+    },
+    {
+      "id": "kw-路地景観",
+      "label": "路地景観",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-45"
+      ]
+    },
+    {
+      "id": "kw-SD法",
+      "label": "SD法",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-45"
+      ]
+    },
+    {
+      "id": "kw-密集市街地",
+      "label": "密集市街地",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-45"
+      ]
+    },
+    {
+      "id": "kw-視野角度別緑視率",
+      "label": "視野角度別緑視率",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-46"
+      ]
+    },
+    {
+      "id": "kw-緑化景観評価",
+      "label": "緑化景観評価",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-46"
+      ]
+    },
+    {
+      "id": "kw-空率",
+      "label": "空率",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-47"
+      ]
+    },
+    {
+      "id": "kw-景観選好",
+      "label": "景観選好",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-47"
+      ]
+    },
+    {
+      "id": "kw-コンジョイント分析",
+      "label": "コンジョイント分析",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-47"
+      ]
+    },
+    {
+      "id": "kw-景観分析",
+      "label": "景観分析",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-48"
+      ]
+    },
+    {
+      "id": "kw-緑の占有率",
+      "label": "緑の占有率",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-48"
+      ]
+    },
+    {
+      "id": "kw-造園設計",
+      "label": "造園設計",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-49"
+      ]
+    },
+    {
+      "id": "kw-植物成長モデル",
+      "label": "植物成長モデル",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-49"
+      ]
+    },
+    {
+      "id": "kw-AMAP",
+      "label": "AMAP",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-49"
+      ]
+    },
+    {
+      "id": "kw-3D-CAD",
+      "label": "3D-CAD",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "E",
+      "color": "#f87171",
+      "papers": [
+        "paper-49"
+      ]
+    }
+  ],
+  "kw_edges": [
+    {
+      "source": "kw-フィールド実験",
+      "target": "kw-景観評価",
+      "weight": 1,
+      "papers": [
+        "paper-1"
+      ]
+    },
+    {
+      "source": "kw-フィールド実験",
+      "target": "kw-緑視率",
+      "weight": 1,
+      "papers": [
+        "paper-1"
+      ]
+    },
+    {
+      "source": "kw-フィールド実験",
+      "target": "kw-視野",
+      "weight": 1,
+      "papers": [
+        "paper-1"
+      ]
+    },
+    {
+      "source": "kw-景観評価",
+      "target": "kw-緑視率",
+      "weight": 1,
+      "papers": [
+        "paper-1"
+      ]
+    },
+    {
+      "source": "kw-景観評価",
+      "target": "kw-視野",
+      "weight": 1,
+      "papers": [
+        "paper-1"
+      ]
+    },
+    {
+      "source": "kw-緑視率",
+      "target": "kw-視野",
+      "weight": 1,
+      "papers": [
+        "paper-1"
+      ]
+    },
+    {
+      "source": "kw-Google Street View",
+      "target": "kw-Green View Index",
+      "weight": 1,
+      "papers": [
+        "paper-2"
+      ]
+    },
+    {
+      "source": "kw-Google Street View",
+      "target": "kw-景観評価",
+      "weight": 1,
+      "papers": [
+        "paper-2"
+      ]
+    },
+    {
+      "source": "kw-Google Street View",
+      "target": "kw-街路緑化",
+      "weight": 1,
+      "papers": [
+        "paper-2"
+      ]
+    },
+    {
+      "source": "kw-Green View Index",
+      "target": "kw-景観評価",
+      "weight": 1,
+      "papers": [
+        "paper-2"
+      ]
+    },
+    {
+      "source": "kw-Green View Index",
+      "target": "kw-街路緑化",
+      "weight": 1,
+      "papers": [
+        "paper-2"
+      ]
+    },
+    {
+      "source": "kw-景観評価",
+      "target": "kw-街路緑化",
+      "weight": 1,
+      "papers": [
+        "paper-2"
+      ]
+    },
+    {
+      "source": "kw-Green View Index",
+      "target": "kw-NDVI",
+      "weight": 1,
+      "papers": [
+        "paper-3"
+      ]
+    },
+    {
+      "source": "kw-Green View Index",
+      "target": "kw-sGVI",
+      "weight": 1,
+      "papers": [
+        "paper-3"
+      ]
+    },
+    {
+      "source": "kw-Green View Index",
+      "target": "kw-ボロノイ分割",
+      "weight": 1,
+      "papers": [
+        "paper-3"
+      ]
+    },
+    {
+      "source": "kw-Green View Index",
+      "target": "kw-都市緑化指標",
+      "weight": 1,
+      "papers": [
+        "paper-3"
+      ]
+    },
+    {
+      "source": "kw-NDVI",
+      "target": "kw-sGVI",
+      "weight": 1,
+      "papers": [
+        "paper-3"
+      ]
+    },
+    {
+      "source": "kw-NDVI",
+      "target": "kw-ボロノイ分割",
+      "weight": 1,
+      "papers": [
+        "paper-3"
+      ]
+    },
+    {
+      "source": "kw-NDVI",
+      "target": "kw-都市緑化指標",
+      "weight": 1,
+      "papers": [
+        "paper-3"
+      ]
+    },
+    {
+      "source": "kw-sGVI",
+      "target": "kw-ボロノイ分割",
+      "weight": 1,
+      "papers": [
+        "paper-3"
+      ]
+    },
+    {
+      "source": "kw-sGVI",
+      "target": "kw-都市緑化指標",
+      "weight": 1,
+      "papers": [
+        "paper-3"
+      ]
+    },
+    {
+      "source": "kw-ボロノイ分割",
+      "target": "kw-都市緑化指標",
+      "weight": 1,
+      "papers": [
+        "paper-3"
+      ]
+    },
+    {
+      "source": "kw-3D緑視認性",
+      "target": "kw-Floor Green View Index",
+      "weight": 1,
+      "papers": [
+        "paper-4"
+      ]
+    },
+    {
+      "source": "kw-3D緑視認性",
+      "target": "kw-建物階別可視領域",
+      "weight": 1,
+      "papers": [
+        "paper-4"
+      ]
+    },
+    {
+      "source": "kw-3D緑視認性",
+      "target": "kw-都市植生",
+      "weight": 1,
+      "papers": [
+        "paper-4"
+      ]
+    },
+    {
+      "source": "kw-Floor Green View Index",
+      "target": "kw-建物階別可視領域",
+      "weight": 1,
+      "papers": [
+        "paper-4"
+      ]
+    },
+    {
+      "source": "kw-Floor Green View Index",
+      "target": "kw-都市植生",
+      "weight": 1,
+      "papers": [
+        "paper-4"
+      ]
+    },
+    {
+      "source": "kw-建物階別可視領域",
+      "target": "kw-都市植生",
+      "weight": 1,
+      "papers": [
+        "paper-4"
+      ]
+    },
+    {
+      "source": "kw-3D都市モデル",
+      "target": "kw-CityGML",
+      "weight": 1,
+      "papers": [
+        "paper-5"
+      ]
+    },
+    {
+      "source": "kw-3D都市モデル",
+      "target": "kw-Green Window View Index",
+      "weight": 1,
+      "papers": [
+        "paper-5"
+      ]
+    },
+    {
+      "source": "kw-3D都市モデル",
+      "target": "kw-LiDAR",
+      "weight": 1,
+      "papers": [
+        "paper-5"
+      ]
+    },
+    {
+      "source": "kw-3D都市モデル",
+      "target": "kw-OpenGLレンダリング",
+      "weight": 1,
+      "papers": [
+        "paper-5"
+      ]
+    },
+    {
+      "source": "kw-CityGML",
+      "target": "kw-Green Window View Index",
+      "weight": 1,
+      "papers": [
+        "paper-5"
+      ]
+    },
+    {
+      "source": "kw-CityGML",
+      "target": "kw-LiDAR",
+      "weight": 1,
+      "papers": [
+        "paper-5"
+      ]
+    },
+    {
+      "source": "kw-CityGML",
+      "target": "kw-OpenGLレンダリング",
+      "weight": 1,
+      "papers": [
+        "paper-5"
+      ]
+    },
+    {
+      "source": "kw-Green Window View Index",
+      "target": "kw-LiDAR",
+      "weight": 1,
+      "papers": [
+        "paper-5"
+      ]
+    },
+    {
+      "source": "kw-Green Window View Index",
+      "target": "kw-OpenGLレンダリング",
+      "weight": 1,
+      "papers": [
+        "paper-5"
+      ]
+    },
+    {
+      "source": "kw-LiDAR",
+      "target": "kw-OpenGLレンダリング",
+      "weight": 1,
+      "papers": [
+        "paper-5"
+      ]
+    },
+    {
+      "source": "kw-3D点群",
+      "target": "kw-PointNet++",
+      "weight": 1,
+      "papers": [
+        "paper-6"
+      ]
+    },
+    {
+      "source": "kw-3D点群",
+      "target": "kw-モバイルレーザスキャニング",
+      "weight": 1,
+      "papers": [
+        "paper-6"
+      ]
+    },
+    {
+      "source": "kw-3D点群",
+      "target": "kw-仮想カメラ",
+      "weight": 1,
+      "papers": [
+        "paper-6"
+      ]
+    },
+    {
+      "source": "kw-3D点群",
+      "target": "kw-緑視率",
+      "weight": 1,
+      "papers": [
+        "paper-6"
+      ]
+    },
+    {
+      "source": "kw-PointNet++",
+      "target": "kw-モバイルレーザスキャニング",
+      "weight": 1,
+      "papers": [
+        "paper-6"
+      ]
+    },
+    {
+      "source": "kw-PointNet++",
+      "target": "kw-仮想カメラ",
+      "weight": 1,
+      "papers": [
+        "paper-6"
+      ]
+    },
+    {
+      "source": "kw-PointNet++",
+      "target": "kw-緑視率",
+      "weight": 1,
+      "papers": [
+        "paper-6"
+      ]
+    },
+    {
+      "source": "kw-モバイルレーザスキャニング",
+      "target": "kw-仮想カメラ",
+      "weight": 1,
+      "papers": [
+        "paper-6"
+      ]
+    },
+    {
+      "source": "kw-モバイルレーザスキャニング",
+      "target": "kw-緑視率",
+      "weight": 1,
+      "papers": [
+        "paper-6"
+      ]
+    },
+    {
+      "source": "kw-仮想カメラ",
+      "target": "kw-緑視率",
+      "weight": 1,
+      "papers": [
+        "paper-6"
+      ]
+    },
+    {
+      "source": "kw-LiDAR",
+      "target": "kw-Projected Point GVI",
+      "weight": 1,
+      "papers": [
+        "paper-7"
+      ]
+    },
+    {
+      "source": "kw-LiDAR",
+      "target": "kw-円筒射影",
+      "weight": 1,
+      "papers": [
+        "paper-7"
+      ]
+    },
+    {
+      "source": "kw-LiDAR",
+      "target": "kw-都市規模GVI",
+      "weight": 1,
+      "papers": [
+        "paper-7"
+      ]
+    },
+    {
+      "source": "kw-Projected Point GVI",
+      "target": "kw-円筒射影",
+      "weight": 1,
+      "papers": [
+        "paper-7"
+      ]
+    },
+    {
+      "source": "kw-Projected Point GVI",
+      "target": "kw-都市規模GVI",
+      "weight": 1,
+      "papers": [
+        "paper-7"
+      ]
+    },
+    {
+      "source": "kw-円筒射影",
+      "target": "kw-都市規模GVI",
+      "weight": 1,
+      "papers": [
+        "paper-7"
+      ]
+    },
+    {
+      "source": "kw-Green View Index",
+      "target": "kw-セマンティックセグメンテーション",
+      "weight": 1,
+      "papers": [
+        "paper-8"
+      ]
+    },
+    {
+      "source": "kw-Green View Index",
+      "target": "kw-最適経路",
+      "weight": 1,
+      "papers": [
+        "paper-8"
+      ]
+    },
+    {
+      "source": "kw-Green View Index",
+      "target": "kw-深層学習",
+      "weight": 1,
+      "papers": [
+        "paper-8"
+      ]
+    },
+    {
+      "source": "kw-セマンティックセグメンテーション",
+      "target": "kw-最適経路",
+      "weight": 1,
+      "papers": [
+        "paper-8"
+      ]
+    },
+    {
+      "source": "kw-セマンティックセグメンテーション",
+      "target": "kw-深層学習",
+      "weight": 1,
+      "papers": [
+        "paper-8"
+      ]
+    },
+    {
+      "source": "kw-最適経路",
+      "target": "kw-深層学習",
+      "weight": 1,
+      "papers": [
+        "paper-8"
+      ]
+    },
+    {
+      "source": "kw-GVI",
+      "target": "kw-Green View Circle",
+      "weight": 1,
+      "papers": [
+        "paper-9"
+      ]
+    },
+    {
+      "source": "kw-GVI",
+      "target": "kw-サンプリング手法",
+      "weight": 1,
+      "papers": [
+        "paper-9"
+      ]
+    },
+    {
+      "source": "kw-Green View Circle",
+      "target": "kw-サンプリング手法",
+      "weight": 1,
+      "papers": [
+        "paper-9"
+      ]
+    },
+    {
+      "source": "kw-GIS",
+      "target": "kw-可視領域分析",
+      "weight": 1,
+      "papers": [
+        "paper-10"
+      ]
+    },
+    {
+      "source": "kw-GIS",
+      "target": "kw-視覚的露出度",
+      "weight": 1,
+      "papers": [
+        "paper-10"
+      ]
+    },
+    {
+      "source": "kw-GIS",
+      "target": "kw-距離減衰",
+      "weight": 1,
+      "papers": [
+        "paper-10"
+      ]
+    },
+    {
+      "source": "kw-GIS",
+      "target": "kw-都市緑化",
+      "weight": 1,
+      "papers": [
+        "paper-10"
+      ]
+    },
+    {
+      "source": "kw-可視領域分析",
+      "target": "kw-視覚的露出度",
+      "weight": 1,
+      "papers": [
+        "paper-10"
+      ]
+    },
+    {
+      "source": "kw-可視領域分析",
+      "target": "kw-距離減衰",
+      "weight": 1,
+      "papers": [
+        "paper-10"
+      ]
+    },
+    {
+      "source": "kw-可視領域分析",
+      "target": "kw-都市緑化",
+      "weight": 1,
+      "papers": [
+        "paper-10"
+      ]
+    },
+    {
+      "source": "kw-視覚的露出度",
+      "target": "kw-距離減衰",
+      "weight": 1,
+      "papers": [
+        "paper-10"
+      ]
+    },
+    {
+      "source": "kw-視覚的露出度",
+      "target": "kw-都市緑化",
+      "weight": 1,
+      "papers": [
+        "paper-10"
+      ]
+    },
+    {
+      "source": "kw-距離減衰",
+      "target": "kw-都市緑化",
+      "weight": 1,
+      "papers": [
+        "paper-10"
+      ]
+    },
+    {
+      "source": "kw-3Dシーン再構成",
+      "target": "kw-Line-based GVI",
+      "weight": 1,
+      "papers": [
+        "paper-11"
+      ]
+    },
+    {
+      "source": "kw-3Dシーン再構成",
+      "target": "kw-リモートセンシング",
+      "weight": 1,
+      "papers": [
+        "paper-11"
+      ]
+    },
+    {
+      "source": "kw-Line-based GVI",
+      "target": "kw-リモートセンシング",
+      "weight": 1,
+      "papers": [
+        "paper-11"
+      ]
+    },
+    {
+      "source": "kw-CFD",
+      "target": "kw-多目的遺伝的アルゴリズム",
+      "weight": 1,
+      "papers": [
+        "paper-12"
+      ]
+    },
+    {
+      "source": "kw-CFD",
+      "target": "kw-屋外熱的快適性",
+      "weight": 1,
+      "papers": [
+        "paper-12"
+      ]
+    },
+    {
+      "source": "kw-CFD",
+      "target": "kw-樹木配置",
+      "weight": 3,
+      "papers": [
+        "paper-12",
+        "paper-37",
+        "paper-42"
+      ]
+    },
+    {
+      "source": "kw-多目的遺伝的アルゴリズム",
+      "target": "kw-屋外熱的快適性",
+      "weight": 1,
+      "papers": [
+        "paper-12"
+      ]
+    },
+    {
+      "source": "kw-多目的遺伝的アルゴリズム",
+      "target": "kw-樹木配置",
+      "weight": 1,
+      "papers": [
+        "paper-12"
+      ]
+    },
+    {
+      "source": "kw-屋外熱的快適性",
+      "target": "kw-樹木配置",
+      "weight": 1,
+      "papers": [
+        "paper-12"
+      ]
+    },
+    {
+      "source": "kw-MRT",
+      "target": "kw-エージェントベースモデル",
+      "weight": 1,
+      "papers": [
+        "paper-13"
+      ]
+    },
+    {
+      "source": "kw-MRT",
+      "target": "kw-樹木配置",
+      "weight": 2,
+      "papers": [
+        "paper-13",
+        "paper-37"
+      ]
+    },
+    {
+      "source": "kw-MRT",
+      "target": "kw-歩行頻度",
+      "weight": 1,
+      "papers": [
+        "paper-13"
+      ]
+    },
+    {
+      "source": "kw-MRT",
+      "target": "kw-遺伝的アルゴリズム",
+      "weight": 1,
+      "papers": [
+        "paper-13"
+      ]
+    },
+    {
+      "source": "kw-エージェントベースモデル",
+      "target": "kw-樹木配置",
+      "weight": 1,
+      "papers": [
+        "paper-13"
+      ]
+    },
+    {
+      "source": "kw-エージェントベースモデル",
+      "target": "kw-歩行頻度",
+      "weight": 1,
+      "papers": [
+        "paper-13"
+      ]
+    },
+    {
+      "source": "kw-エージェントベースモデル",
+      "target": "kw-遺伝的アルゴリズム",
+      "weight": 1,
+      "papers": [
+        "paper-13"
+      ]
+    },
+    {
+      "source": "kw-樹木配置",
+      "target": "kw-歩行頻度",
+      "weight": 1,
+      "papers": [
+        "paper-13"
+      ]
+    },
+    {
+      "source": "kw-樹木配置",
+      "target": "kw-遺伝的アルゴリズム",
+      "weight": 2,
+      "papers": [
+        "paper-13",
+        "paper-19"
+      ]
+    },
+    {
+      "source": "kw-歩行頻度",
+      "target": "kw-遺伝的アルゴリズム",
+      "weight": 1,
+      "papers": [
+        "paper-13"
+      ]
+    },
+    {
+      "source": "kw-Green View Index",
+      "target": "kw-NSGA-II",
+      "weight": 1,
+      "papers": [
+        "paper-14"
+      ]
+    },
+    {
+      "source": "kw-Green View Index",
+      "target": "kw-Tree Shape Surfaces",
+      "weight": 1,
+      "papers": [
+        "paper-14"
+      ]
+    },
+    {
+      "source": "kw-Green View Index",
+      "target": "kw-UTCI",
+      "weight": 1,
+      "papers": [
+        "paper-14"
+      ]
+    },
+    {
+      "source": "kw-Green View Index",
+      "target": "kw-多目的最適化",
+      "weight": 1,
+      "papers": [
+        "paper-14"
+      ]
+    },
+    {
+      "source": "kw-NSGA-II",
+      "target": "kw-Tree Shape Surfaces",
+      "weight": 1,
+      "papers": [
+        "paper-14"
+      ]
+    },
+    {
+      "source": "kw-NSGA-II",
+      "target": "kw-UTCI",
+      "weight": 2,
+      "papers": [
+        "paper-14",
+        "paper-24"
+      ]
+    },
+    {
+      "source": "kw-NSGA-II",
+      "target": "kw-多目的最適化",
+      "weight": 1,
+      "papers": [
+        "paper-14"
+      ]
+    },
+    {
+      "source": "kw-Tree Shape Surfaces",
+      "target": "kw-UTCI",
+      "weight": 1,
+      "papers": [
+        "paper-14"
+      ]
+    },
+    {
+      "source": "kw-Tree Shape Surfaces",
+      "target": "kw-多目的最適化",
+      "weight": 1,
+      "papers": [
+        "paper-14"
+      ]
+    },
+    {
+      "source": "kw-UTCI",
+      "target": "kw-多目的最適化",
+      "weight": 1,
+      "papers": [
+        "paper-14"
+      ]
+    },
+    {
+      "source": "kw-ILS",
+      "target": "kw-NNサロゲート",
+      "weight": 1,
+      "papers": [
+        "paper-15"
+      ]
+    },
+    {
+      "source": "kw-ILS",
+      "target": "kw-平均放射温度",
+      "weight": 1,
+      "papers": [
+        "paper-15"
+      ]
+    },
+    {
+      "source": "kw-ILS",
+      "target": "kw-樹木配置",
+      "weight": 1,
+      "papers": [
+        "paper-15"
+      ]
+    },
+    {
+      "source": "kw-NNサロゲート",
+      "target": "kw-平均放射温度",
+      "weight": 1,
+      "papers": [
+        "paper-15"
+      ]
+    },
+    {
+      "source": "kw-NNサロゲート",
+      "target": "kw-樹木配置",
+      "weight": 1,
+      "papers": [
+        "paper-15"
+      ]
+    },
+    {
+      "source": "kw-平均放射温度",
+      "target": "kw-樹木配置",
+      "weight": 1,
+      "papers": [
+        "paper-15"
+      ]
+    },
+    {
+      "source": "kw-ACO",
+      "target": "kw-UTCI",
+      "weight": 1,
+      "papers": [
+        "paper-16"
+      ]
+    },
+    {
+      "source": "kw-ACO",
+      "target": "kw-樹木計算モデル",
+      "weight": 1,
+      "papers": [
+        "paper-16"
+      ]
+    },
+    {
+      "source": "kw-ACO",
+      "target": "kw-緑のインフラ最適化",
+      "weight": 1,
+      "papers": [
+        "paper-16"
+      ]
+    },
+    {
+      "source": "kw-UTCI",
+      "target": "kw-樹木計算モデル",
+      "weight": 1,
+      "papers": [
+        "paper-16"
+      ]
+    },
+    {
+      "source": "kw-UTCI",
+      "target": "kw-緑のインフラ最適化",
+      "weight": 1,
+      "papers": [
+        "paper-16"
+      ]
+    },
+    {
+      "source": "kw-樹木計算モデル",
+      "target": "kw-緑のインフラ最適化",
+      "weight": 1,
+      "papers": [
+        "paper-16"
+      ]
+    },
+    {
+      "source": "kw-SOLWEIG",
+      "target": "kw-メタヒューリスティクス",
+      "weight": 1,
+      "papers": [
+        "paper-17"
+      ]
+    },
+    {
+      "source": "kw-SOLWEIG",
+      "target": "kw-平均放射温度",
+      "weight": 1,
+      "papers": [
+        "paper-17"
+      ]
+    },
+    {
+      "source": "kw-SOLWEIG",
+      "target": "kw-樹木配置最適化",
+      "weight": 1,
+      "papers": [
+        "paper-17"
+      ]
+    },
+    {
+      "source": "kw-メタヒューリスティクス",
+      "target": "kw-平均放射温度",
+      "weight": 1,
+      "papers": [
+        "paper-17"
+      ]
+    },
+    {
+      "source": "kw-メタヒューリスティクス",
+      "target": "kw-樹木配置最適化",
+      "weight": 1,
+      "papers": [
+        "paper-17"
+      ]
+    },
+    {
+      "source": "kw-平均放射温度",
+      "target": "kw-樹木配置最適化",
+      "weight": 1,
+      "papers": [
+        "paper-17"
+      ]
+    },
+    {
+      "source": "kw-Galapagos",
+      "target": "kw-日射緩和",
+      "weight": 1,
+      "papers": [
+        "paper-18"
+      ]
+    },
+    {
+      "source": "kw-Galapagos",
+      "target": "kw-樹木位置",
+      "weight": 1,
+      "papers": [
+        "paper-18"
+      ]
+    },
+    {
+      "source": "kw-Galapagos",
+      "target": "kw-進化的アルゴリズム",
+      "weight": 1,
+      "papers": [
+        "paper-18"
+      ]
+    },
+    {
+      "source": "kw-日射緩和",
+      "target": "kw-樹木位置",
+      "weight": 1,
+      "papers": [
+        "paper-18"
+      ]
+    },
+    {
+      "source": "kw-日射緩和",
+      "target": "kw-進化的アルゴリズム",
+      "weight": 1,
+      "papers": [
+        "paper-18"
+      ]
+    },
+    {
+      "source": "kw-樹木位置",
+      "target": "kw-進化的アルゴリズム",
+      "weight": 1,
+      "papers": [
+        "paper-18"
+      ]
+    },
+    {
+      "source": "kw-樹木配置",
+      "target": "kw-熱ストレス",
+      "weight": 1,
+      "papers": [
+        "paper-19"
+      ]
+    },
+    {
+      "source": "kw-樹木配置",
+      "target": "kw-都市公園",
+      "weight": 1,
+      "papers": [
+        "paper-19"
+      ]
+    },
+    {
+      "source": "kw-熱ストレス",
+      "target": "kw-遺伝的アルゴリズム",
+      "weight": 1,
+      "papers": [
+        "paper-19"
+      ]
+    },
+    {
+      "source": "kw-熱ストレス",
+      "target": "kw-都市公園",
+      "weight": 1,
+      "papers": [
+        "paper-19"
+      ]
+    },
+    {
+      "source": "kw-遺伝的アルゴリズム",
+      "target": "kw-都市公園",
+      "weight": 1,
+      "papers": [
+        "paper-19"
+      ]
+    },
+    {
+      "source": "kw-3D分析",
+      "target": "kw-GIS",
+      "weight": 1,
+      "papers": [
+        "paper-20"
+      ]
+    },
+    {
+      "source": "kw-3D分析",
+      "target": "kw-樹木日陰",
+      "weight": 1,
+      "papers": [
+        "paper-20"
+      ]
+    },
+    {
+      "source": "kw-3D分析",
+      "target": "kw-蟻コロニー最適化",
+      "weight": 1,
+      "papers": [
+        "paper-20"
+      ]
+    },
+    {
+      "source": "kw-GIS",
+      "target": "kw-樹木日陰",
+      "weight": 1,
+      "papers": [
+        "paper-20"
+      ]
+    },
+    {
+      "source": "kw-GIS",
+      "target": "kw-蟻コロニー最適化",
+      "weight": 1,
+      "papers": [
+        "paper-20"
+      ]
+    },
+    {
+      "source": "kw-樹木日陰",
+      "target": "kw-蟻コロニー最適化",
+      "weight": 1,
+      "papers": [
+        "paper-20"
+      ]
+    },
+    {
+      "source": "kw-3D樹冠形状",
+      "target": "kw-時間的発達",
+      "weight": 1,
+      "papers": [
+        "paper-21"
+      ]
+    },
+    {
+      "source": "kw-3D樹冠形状",
+      "target": "kw-樹木配置最適化",
+      "weight": 1,
+      "papers": [
+        "paper-21"
+      ]
+    },
+    {
+      "source": "kw-時間的発達",
+      "target": "kw-樹木配置最適化",
+      "weight": 1,
+      "papers": [
+        "paper-21"
+      ]
+    },
+    {
+      "source": "kw-3D Isovist",
+      "target": "kw-GIS",
+      "weight": 1,
+      "papers": [
+        "paper-22"
+      ]
+    },
+    {
+      "source": "kw-3D Isovist",
+      "target": "kw-NSGA-II",
+      "weight": 1,
+      "papers": [
+        "paper-22"
+      ]
+    },
+    {
+      "source": "kw-3D Isovist",
+      "target": "kw-パレートフロンティア",
+      "weight": 1,
+      "papers": [
+        "paper-22"
+      ]
+    },
+    {
+      "source": "kw-3D Isovist",
+      "target": "kw-都市公園設計",
+      "weight": 1,
+      "papers": [
+        "paper-22"
+      ]
+    },
+    {
+      "source": "kw-GIS",
+      "target": "kw-NSGA-II",
+      "weight": 1,
+      "papers": [
+        "paper-22"
+      ]
+    },
+    {
+      "source": "kw-GIS",
+      "target": "kw-パレートフロンティア",
+      "weight": 1,
+      "papers": [
+        "paper-22"
+      ]
+    },
+    {
+      "source": "kw-GIS",
+      "target": "kw-都市公園設計",
+      "weight": 1,
+      "papers": [
+        "paper-22"
+      ]
+    },
+    {
+      "source": "kw-NSGA-II",
+      "target": "kw-パレートフロンティア",
+      "weight": 1,
+      "papers": [
+        "paper-22"
+      ]
+    },
+    {
+      "source": "kw-NSGA-II",
+      "target": "kw-都市公園設計",
+      "weight": 1,
+      "papers": [
+        "paper-22"
+      ]
+    },
+    {
+      "source": "kw-パレートフロンティア",
+      "target": "kw-都市公園設計",
+      "weight": 1,
+      "papers": [
+        "paper-22"
+      ]
+    },
+    {
+      "source": "kw-地表面温度",
+      "target": "kw-空間最適化",
+      "weight": 1,
+      "papers": [
+        "paper-23"
+      ]
+    },
+    {
+      "source": "kw-地表面温度",
+      "target": "kw-遺伝的アルゴリズム",
+      "weight": 1,
+      "papers": [
+        "paper-23"
+      ]
+    },
+    {
+      "source": "kw-地表面温度",
+      "target": "kw-都市緑地",
+      "weight": 1,
+      "papers": [
+        "paper-23"
+      ]
+    },
+    {
+      "source": "kw-空間最適化",
+      "target": "kw-遺伝的アルゴリズム",
+      "weight": 1,
+      "papers": [
+        "paper-23"
+      ]
+    },
+    {
+      "source": "kw-空間最適化",
+      "target": "kw-都市緑地",
+      "weight": 1,
+      "papers": [
+        "paper-23"
+      ]
+    },
+    {
+      "source": "kw-遺伝的アルゴリズム",
+      "target": "kw-都市緑地",
+      "weight": 1,
+      "papers": [
+        "paper-23"
+      ]
+    },
+    {
+      "source": "kw-Grasshopper",
+      "target": "kw-LAI",
+      "weight": 1,
+      "papers": [
+        "paper-24"
+      ]
+    },
+    {
+      "source": "kw-Grasshopper",
+      "target": "kw-Ladybug Tools",
+      "weight": 1,
+      "papers": [
+        "paper-24"
+      ]
+    },
+    {
+      "source": "kw-Grasshopper",
+      "target": "kw-MRT",
+      "weight": 1,
+      "papers": [
+        "paper-24"
+      ]
+    },
+    {
+      "source": "kw-Grasshopper",
+      "target": "kw-NSGA-II",
+      "weight": 1,
+      "papers": [
+        "paper-24"
+      ]
+    },
+    {
+      "source": "kw-Grasshopper",
+      "target": "kw-UTCI",
+      "weight": 1,
+      "papers": [
+        "paper-24"
+      ]
+    },
+    {
+      "source": "kw-LAI",
+      "target": "kw-Ladybug Tools",
+      "weight": 1,
+      "papers": [
+        "paper-24"
+      ]
+    },
+    {
+      "source": "kw-LAI",
+      "target": "kw-MRT",
+      "weight": 1,
+      "papers": [
+        "paper-24"
+      ]
+    },
+    {
+      "source": "kw-LAI",
+      "target": "kw-NSGA-II",
+      "weight": 1,
+      "papers": [
+        "paper-24"
+      ]
+    },
+    {
+      "source": "kw-LAI",
+      "target": "kw-UTCI",
+      "weight": 1,
+      "papers": [
+        "paper-24"
+      ]
+    },
+    {
+      "source": "kw-Ladybug Tools",
+      "target": "kw-MRT",
+      "weight": 1,
+      "papers": [
+        "paper-24"
+      ]
+    },
+    {
+      "source": "kw-Ladybug Tools",
+      "target": "kw-NSGA-II",
+      "weight": 1,
+      "papers": [
+        "paper-24"
+      ]
+    },
+    {
+      "source": "kw-Ladybug Tools",
+      "target": "kw-UTCI",
+      "weight": 1,
+      "papers": [
+        "paper-24"
+      ]
+    },
+    {
+      "source": "kw-MRT",
+      "target": "kw-NSGA-II",
+      "weight": 1,
+      "papers": [
+        "paper-24"
+      ]
+    },
+    {
+      "source": "kw-MRT",
+      "target": "kw-UTCI",
+      "weight": 1,
+      "papers": [
+        "paper-24"
+      ]
+    },
+    {
+      "source": "kw-Tmrt",
+      "target": "kw-歩行者熱的快適性",
+      "weight": 1,
+      "papers": [
+        "paper-25"
+      ]
+    },
+    {
+      "source": "kw-Tmrt",
+      "target": "kw-街路樹",
+      "weight": 1,
+      "papers": [
+        "paper-25"
+      ]
+    },
+    {
+      "source": "kw-歩行者熱的快適性",
+      "target": "kw-街路樹",
+      "weight": 1,
+      "papers": [
+        "paper-25"
+      ]
+    },
+    {
+      "source": "kw-3D Gaussian Splatting",
+      "target": "kw-S3PVI",
+      "weight": 1,
+      "papers": [
+        "paper-26"
+      ]
+    },
+    {
+      "source": "kw-3D Gaussian Splatting",
+      "target": "kw-季節動態",
+      "weight": 1,
+      "papers": [
+        "paper-26"
+      ]
+    },
+    {
+      "source": "kw-3D Gaussian Splatting",
+      "target": "kw-深層学習",
+      "weight": 1,
+      "papers": [
+        "paper-26"
+      ]
+    },
+    {
+      "source": "kw-3D Gaussian Splatting",
+      "target": "kw-都市植生",
+      "weight": 1,
+      "papers": [
+        "paper-26"
+      ]
+    },
+    {
+      "source": "kw-S3PVI",
+      "target": "kw-季節動態",
+      "weight": 1,
+      "papers": [
+        "paper-26"
+      ]
+    },
+    {
+      "source": "kw-S3PVI",
+      "target": "kw-深層学習",
+      "weight": 1,
+      "papers": [
+        "paper-26"
+      ]
+    },
+    {
+      "source": "kw-S3PVI",
+      "target": "kw-都市植生",
+      "weight": 1,
+      "papers": [
+        "paper-26"
+      ]
+    },
+    {
+      "source": "kw-季節動態",
+      "target": "kw-深層学習",
+      "weight": 1,
+      "papers": [
+        "paper-26"
+      ]
+    },
+    {
+      "source": "kw-季節動態",
+      "target": "kw-都市植生",
+      "weight": 1,
+      "papers": [
+        "paper-26"
+      ]
+    },
+    {
+      "source": "kw-深層学習",
+      "target": "kw-都市植生",
+      "weight": 1,
+      "papers": [
+        "paper-26"
+      ]
+    },
+    {
+      "source": "kw-シンガポール",
+      "target": "kw-緑視率",
+      "weight": 1,
+      "papers": [
+        "paper-27"
+      ]
+    },
+    {
+      "source": "kw-シンガポール",
+      "target": "kw-視覚的知覚",
+      "weight": 1,
+      "papers": [
+        "paper-27"
+      ]
+    },
+    {
+      "source": "kw-シンガポール",
+      "target": "kw-都市デジタルツイン",
+      "weight": 1,
+      "papers": [
+        "paper-27"
+      ]
+    },
+    {
+      "source": "kw-緑視率",
+      "target": "kw-視覚的知覚",
+      "weight": 1,
+      "papers": [
+        "paper-27"
+      ]
+    },
+    {
+      "source": "kw-緑視率",
+      "target": "kw-都市デジタルツイン",
+      "weight": 1,
+      "papers": [
+        "paper-27"
+      ]
+    },
+    {
+      "source": "kw-視覚的知覚",
+      "target": "kw-都市デジタルツイン",
+      "weight": 1,
+      "papers": [
+        "paper-27"
+      ]
+    },
+    {
+      "source": "kw-Instant-NGP",
+      "target": "kw-NeRF",
+      "weight": 1,
+      "papers": [
+        "paper-28"
+      ]
+    },
+    {
+      "source": "kw-Instant-NGP",
+      "target": "kw-ドローン",
+      "weight": 1,
+      "papers": [
+        "paper-28"
+      ]
+    },
+    {
+      "source": "kw-Instant-NGP",
+      "target": "kw-ランドスケープアーキテクチャ",
+      "weight": 1,
+      "papers": [
+        "paper-28"
+      ]
+    },
+    {
+      "source": "kw-NeRF",
+      "target": "kw-ドローン",
+      "weight": 1,
+      "papers": [
+        "paper-28"
+      ]
+    },
+    {
+      "source": "kw-NeRF",
+      "target": "kw-ランドスケープアーキテクチャ",
+      "weight": 1,
+      "papers": [
+        "paper-28"
+      ]
+    },
+    {
+      "source": "kw-ドローン",
+      "target": "kw-ランドスケープアーキテクチャ",
+      "weight": 1,
+      "papers": [
+        "paper-28"
+      ]
+    },
+    {
+      "source": "kw-3D Gaussian Splatting",
+      "target": "kw-CFD",
+      "weight": 1,
+      "papers": [
+        "paper-29"
+      ]
+    },
+    {
+      "source": "kw-3D Gaussian Splatting",
+      "target": "kw-植生点群",
+      "weight": 1,
+      "papers": [
+        "paper-29"
+      ]
+    },
+    {
+      "source": "kw-3D Gaussian Splatting",
+      "target": "kw-都市微気候",
+      "weight": 1,
+      "papers": [
+        "paper-29"
+      ]
+    },
+    {
+      "source": "kw-CFD",
+      "target": "kw-植生点群",
+      "weight": 1,
+      "papers": [
+        "paper-29"
+      ]
+    },
+    {
+      "source": "kw-CFD",
+      "target": "kw-都市微気候",
+      "weight": 1,
+      "papers": [
+        "paper-29"
+      ]
+    },
+    {
+      "source": "kw-植生点群",
+      "target": "kw-都市微気候",
+      "weight": 1,
+      "papers": [
+        "paper-29"
+      ]
+    },
+    {
+      "source": "kw-3D Gaussian Splatting",
+      "target": "kw-ドローン",
+      "weight": 1,
+      "papers": [
+        "paper-30"
+      ]
+    },
+    {
+      "source": "kw-3D Gaussian Splatting",
+      "target": "kw-林業",
+      "weight": 1,
+      "papers": [
+        "paper-30"
+      ]
+    },
+    {
+      "source": "kw-3D Gaussian Splatting",
+      "target": "kw-樹冠高マップ",
+      "weight": 1,
+      "papers": [
+        "paper-30"
+      ]
+    },
+    {
+      "source": "kw-ドローン",
+      "target": "kw-林業",
+      "weight": 1,
+      "papers": [
+        "paper-30"
+      ]
+    },
+    {
+      "source": "kw-ドローン",
+      "target": "kw-樹冠高マップ",
+      "weight": 1,
+      "papers": [
+        "paper-30"
+      ]
+    },
+    {
+      "source": "kw-林業",
+      "target": "kw-樹冠高マップ",
+      "weight": 1,
+      "papers": [
+        "paper-30"
+      ]
+    },
+    {
+      "source": "kw-3D Gaussian Splatting",
+      "target": "kw-セマンティック再構成",
+      "weight": 1,
+      "papers": [
+        "paper-31"
+      ]
+    },
+    {
+      "source": "kw-3D Gaussian Splatting",
+      "target": "kw-都市シーン理解",
+      "weight": 1,
+      "papers": [
+        "paper-31"
+      ]
+    },
+    {
+      "source": "kw-セマンティック再構成",
+      "target": "kw-都市シーン理解",
+      "weight": 1,
+      "papers": [
+        "paper-31"
+      ]
+    },
+    {
+      "source": "kw-エージェントベースモデル",
+      "target": "kw-デジタルツイン",
+      "weight": 1,
+      "papers": [
+        "paper-32"
+      ]
+    },
+    {
+      "source": "kw-エージェントベースモデル",
+      "target": "kw-都市林",
+      "weight": 1,
+      "papers": [
+        "paper-32"
+      ]
+    },
+    {
+      "source": "kw-デジタルツイン",
+      "target": "kw-都市林",
+      "weight": 1,
+      "papers": [
+        "paper-32"
+      ]
+    },
+    {
+      "source": "kw-スマートシティ",
+      "target": "kw-デジタルツイン",
+      "weight": 1,
+      "papers": [
+        "paper-33"
+      ]
+    },
+    {
+      "source": "kw-スマートシティ",
+      "target": "kw-植生",
+      "weight": 1,
+      "papers": [
+        "paper-33"
+      ]
+    },
+    {
+      "source": "kw-スマートシティ",
+      "target": "kw-都市計画",
+      "weight": 1,
+      "papers": [
+        "paper-33"
+      ]
+    },
+    {
+      "source": "kw-デジタルツイン",
+      "target": "kw-植生",
+      "weight": 1,
+      "papers": [
+        "paper-33"
+      ]
+    },
+    {
+      "source": "kw-デジタルツイン",
+      "target": "kw-都市計画",
+      "weight": 1,
+      "papers": [
+        "paper-33"
+      ]
+    },
+    {
+      "source": "kw-植生",
+      "target": "kw-都市計画",
+      "weight": 1,
+      "papers": [
+        "paper-33"
+      ]
+    },
+    {
+      "source": "kw-3D再構成",
+      "target": "kw-NeRF",
+      "weight": 1,
+      "papers": [
+        "paper-34"
+      ]
+    },
+    {
+      "source": "kw-3D再構成",
+      "target": "kw-VR",
+      "weight": 1,
+      "papers": [
+        "paper-34"
+      ]
+    },
+    {
+      "source": "kw-3D再構成",
+      "target": "kw-都市庭園設計",
+      "weight": 1,
+      "papers": [
+        "paper-34"
+      ]
+    },
+    {
+      "source": "kw-NeRF",
+      "target": "kw-VR",
+      "weight": 1,
+      "papers": [
+        "paper-34"
+      ]
+    },
+    {
+      "source": "kw-NeRF",
+      "target": "kw-都市庭園設計",
+      "weight": 1,
+      "papers": [
+        "paper-34"
+      ]
+    },
+    {
+      "source": "kw-VR",
+      "target": "kw-都市庭園設計",
+      "weight": 1,
+      "papers": [
+        "paper-34"
+      ]
+    },
+    {
+      "source": "kw-GVI",
+      "target": "kw-パノラマ画像",
+      "weight": 1,
+      "papers": [
+        "paper-35"
+      ]
+    },
+    {
+      "source": "kw-GVI",
+      "target": "kw-知覚的感覚次元",
+      "weight": 1,
+      "papers": [
+        "paper-35"
+      ]
+    },
+    {
+      "source": "kw-GVI",
+      "target": "kw-視覚的景観品質",
+      "weight": 1,
+      "papers": [
+        "paper-35"
+      ]
+    },
+    {
+      "source": "kw-パノラマ画像",
+      "target": "kw-知覚的感覚次元",
+      "weight": 1,
+      "papers": [
+        "paper-35"
+      ]
+    },
+    {
+      "source": "kw-パノラマ画像",
+      "target": "kw-視覚的景観品質",
+      "weight": 1,
+      "papers": [
+        "paper-35"
+      ]
+    },
+    {
+      "source": "kw-知覚的感覚次元",
+      "target": "kw-視覚的景観品質",
+      "weight": 1,
+      "papers": [
+        "paper-35"
+      ]
+    },
+    {
+      "source": "kw-パレート解",
+      "target": "kw-多目的最適化",
+      "weight": 1,
+      "papers": [
+        "paper-36"
+      ]
+    },
+    {
+      "source": "kw-パレート解",
+      "target": "kw-天空率",
+      "weight": 1,
+      "papers": [
+        "paper-36"
+      ]
+    },
+    {
+      "source": "kw-パレート解",
+      "target": "kw-樹木配置",
+      "weight": 1,
+      "papers": [
+        "paper-36"
+      ]
+    },
+    {
+      "source": "kw-パレート解",
+      "target": "kw-熱放射環境",
+      "weight": 1,
+      "papers": [
+        "paper-36"
+      ]
+    },
+    {
+      "source": "kw-パレート解",
+      "target": "kw-緑視率",
+      "weight": 1,
+      "papers": [
+        "paper-36"
+      ]
+    },
+    {
+      "source": "kw-多目的最適化",
+      "target": "kw-天空率",
+      "weight": 1,
+      "papers": [
+        "paper-36"
+      ]
+    },
+    {
+      "source": "kw-多目的最適化",
+      "target": "kw-樹木配置",
+      "weight": 1,
+      "papers": [
+        "paper-36"
+      ]
+    },
+    {
+      "source": "kw-多目的最適化",
+      "target": "kw-熱放射環境",
+      "weight": 1,
+      "papers": [
+        "paper-36"
+      ]
+    },
+    {
+      "source": "kw-多目的最適化",
+      "target": "kw-緑視率",
+      "weight": 1,
+      "papers": [
+        "paper-36"
+      ]
+    },
+    {
+      "source": "kw-天空率",
+      "target": "kw-樹木配置",
+      "weight": 1,
+      "papers": [
+        "paper-36"
+      ]
+    },
+    {
+      "source": "kw-天空率",
+      "target": "kw-熱放射環境",
+      "weight": 1,
+      "papers": [
+        "paper-36"
+      ]
+    },
+    {
+      "source": "kw-天空率",
+      "target": "kw-緑視率",
+      "weight": 1,
+      "papers": [
+        "paper-36"
+      ]
+    },
+    {
+      "source": "kw-樹木配置",
+      "target": "kw-熱放射環境",
+      "weight": 1,
+      "papers": [
+        "paper-36"
+      ]
+    },
+    {
+      "source": "kw-樹木配置",
+      "target": "kw-緑視率",
+      "weight": 2,
+      "papers": [
+        "paper-36",
+        "paper-40"
+      ]
+    },
+    {
+      "source": "kw-熱放射環境",
+      "target": "kw-緑視率",
+      "weight": 1,
+      "papers": [
+        "paper-36"
+      ]
+    },
+    {
+      "source": "kw-CFD",
+      "target": "kw-MRT",
+      "weight": 1,
+      "papers": [
+        "paper-37"
+      ]
+    },
+    {
+      "source": "kw-CFD",
+      "target": "kw-ヒートアイランド",
+      "weight": 1,
+      "papers": [
+        "paper-37"
+      ]
+    },
+    {
+      "source": "kw-CFD",
+      "target": "kw-暑熱適応",
+      "weight": 1,
+      "papers": [
+        "paper-37"
+      ]
+    },
+    {
+      "source": "kw-CFD",
+      "target": "kw-最適化",
+      "weight": 2,
+      "papers": [
+        "paper-37",
+        "paper-42"
+      ]
+    },
+    {
+      "source": "kw-MRT",
+      "target": "kw-ヒートアイランド",
+      "weight": 1,
+      "papers": [
+        "paper-37"
+      ]
+    },
+    {
+      "source": "kw-MRT",
+      "target": "kw-暑熱適応",
+      "weight": 1,
+      "papers": [
+        "paper-37"
+      ]
+    },
+    {
+      "source": "kw-MRT",
+      "target": "kw-最適化",
+      "weight": 1,
+      "papers": [
+        "paper-37"
+      ]
+    },
+    {
+      "source": "kw-ヒートアイランド",
+      "target": "kw-暑熱適応",
+      "weight": 1,
+      "papers": [
+        "paper-37"
+      ]
+    },
+    {
+      "source": "kw-ヒートアイランド",
+      "target": "kw-最適化",
+      "weight": 1,
+      "papers": [
+        "paper-37"
+      ]
+    },
+    {
+      "source": "kw-ヒートアイランド",
+      "target": "kw-樹木配置",
+      "weight": 1,
+      "papers": [
+        "paper-37"
+      ]
+    },
+    {
+      "source": "kw-暑熱適応",
+      "target": "kw-最適化",
+      "weight": 1,
+      "papers": [
+        "paper-37"
+      ]
+    },
+    {
+      "source": "kw-暑熱適応",
+      "target": "kw-樹木配置",
+      "weight": 1,
+      "papers": [
+        "paper-37"
+      ]
+    },
+    {
+      "source": "kw-最適化",
+      "target": "kw-樹木配置",
+      "weight": 2,
+      "papers": [
+        "paper-37",
+        "paper-42"
+      ]
+    },
+    {
+      "source": "kw-全方位視野",
+      "target": "kw-植栽計画シミュレーション",
+      "weight": 1,
+      "papers": [
+        "paper-38"
+      ]
+    },
+    {
+      "source": "kw-全方位視野",
+      "target": "kw-立体角",
+      "weight": 1,
+      "papers": [
+        "paper-38"
+      ]
+    },
+    {
+      "source": "kw-全方位視野",
+      "target": "kw-緑視率",
+      "weight": 1,
+      "papers": [
+        "paper-38"
+      ]
+    },
+    {
+      "source": "kw-植栽計画シミュレーション",
+      "target": "kw-立体角",
+      "weight": 1,
+      "papers": [
+        "paper-38"
+      ]
+    },
+    {
+      "source": "kw-植栽計画シミュレーション",
+      "target": "kw-緑視率",
+      "weight": 1,
+      "papers": [
+        "paper-38"
+      ]
+    },
+    {
+      "source": "kw-立体角",
+      "target": "kw-緑視率",
+      "weight": 1,
+      "papers": [
+        "paper-38"
+      ]
+    },
+    {
+      "source": "kw-全方位視認率",
+      "target": "kw-感性評価予測",
+      "weight": 1,
+      "papers": [
+        "paper-39"
+      ]
+    },
+    {
+      "source": "kw-全方位視認率",
+      "target": "kw-緑視率",
+      "weight": 1,
+      "papers": [
+        "paper-39"
+      ]
+    },
+    {
+      "source": "kw-全方位視認率",
+      "target": "kw-自己組織化マップ",
+      "weight": 1,
+      "papers": [
+        "paper-39"
+      ]
+    },
+    {
+      "source": "kw-感性評価予測",
+      "target": "kw-緑視率",
+      "weight": 1,
+      "papers": [
+        "paper-39"
+      ]
+    },
+    {
+      "source": "kw-感性評価予測",
+      "target": "kw-自己組織化マップ",
+      "weight": 1,
+      "papers": [
+        "paper-39"
+      ]
+    },
+    {
+      "source": "kw-緑視率",
+      "target": "kw-自己組織化マップ",
+      "weight": 1,
+      "papers": [
+        "paper-39"
+      ]
+    },
+    {
+      "source": "kw-CGモデル",
+      "target": "kw-GPGPU",
+      "weight": 1,
+      "papers": [
+        "paper-40"
+      ]
+    },
+    {
+      "source": "kw-CGモデル",
+      "target": "kw-モンテカルロシミュレーション",
+      "weight": 1,
+      "papers": [
+        "paper-40"
+      ]
+    },
+    {
+      "source": "kw-CGモデル",
+      "target": "kw-樹木配置",
+      "weight": 1,
+      "papers": [
+        "paper-40"
+      ]
+    },
+    {
+      "source": "kw-CGモデル",
+      "target": "kw-緑視率",
+      "weight": 1,
+      "papers": [
+        "paper-40"
+      ]
+    },
+    {
+      "source": "kw-GPGPU",
+      "target": "kw-モンテカルロシミュレーション",
+      "weight": 1,
+      "papers": [
+        "paper-40"
+      ]
+    },
+    {
+      "source": "kw-GPGPU",
+      "target": "kw-樹木配置",
+      "weight": 1,
+      "papers": [
+        "paper-40"
+      ]
+    },
+    {
+      "source": "kw-GPGPU",
+      "target": "kw-緑視率",
+      "weight": 1,
+      "papers": [
+        "paper-40"
+      ]
+    },
+    {
+      "source": "kw-モンテカルロシミュレーション",
+      "target": "kw-樹木配置",
+      "weight": 1,
+      "papers": [
+        "paper-40"
+      ]
+    },
+    {
+      "source": "kw-モンテカルロシミュレーション",
+      "target": "kw-緑視率",
+      "weight": 1,
+      "papers": [
+        "paper-40"
+      ]
+    },
+    {
+      "source": "kw-3次元",
+      "target": "kw-立体緑視率",
+      "weight": 1,
+      "papers": [
+        "paper-41"
+      ]
+    },
+    {
+      "source": "kw-3次元",
+      "target": "kw-緑景観評価",
+      "weight": 1,
+      "papers": [
+        "paper-41"
+      ]
+    },
+    {
+      "source": "kw-3次元",
+      "target": "kw-都市空間",
+      "weight": 1,
+      "papers": [
+        "paper-41"
+      ]
+    },
+    {
+      "source": "kw-立体緑視率",
+      "target": "kw-緑景観評価",
+      "weight": 1,
+      "papers": [
+        "paper-41"
+      ]
+    },
+    {
+      "source": "kw-立体緑視率",
+      "target": "kw-都市空間",
+      "weight": 1,
+      "papers": [
+        "paper-41"
+      ]
+    },
+    {
+      "source": "kw-緑景観評価",
+      "target": "kw-都市空間",
+      "weight": 1,
+      "papers": [
+        "paper-41"
+      ]
+    },
+    {
+      "source": "kw-CFD",
+      "target": "kw-随伴変数法",
+      "weight": 1,
+      "papers": [
+        "paper-42"
+      ]
+    },
+    {
+      "source": "kw-CFD",
+      "target": "kw-風速低減",
+      "weight": 1,
+      "papers": [
+        "paper-42"
+      ]
+    },
+    {
+      "source": "kw-最適化",
+      "target": "kw-随伴変数法",
+      "weight": 1,
+      "papers": [
+        "paper-42"
+      ]
+    },
+    {
+      "source": "kw-最適化",
+      "target": "kw-風速低減",
+      "weight": 1,
+      "papers": [
+        "paper-42"
+      ]
+    },
+    {
+      "source": "kw-樹木配置",
+      "target": "kw-随伴変数法",
+      "weight": 1,
+      "papers": [
+        "paper-42"
+      ]
+    },
+    {
+      "source": "kw-樹木配置",
+      "target": "kw-風速低減",
+      "weight": 1,
+      "papers": [
+        "paper-42"
+      ]
+    },
+    {
+      "source": "kw-随伴変数法",
+      "target": "kw-風速低減",
+      "weight": 1,
+      "papers": [
+        "paper-42"
+      ]
+    },
+    {
+      "source": "kw-植栽デザイン",
+      "target": "kw-歩行者快適性",
+      "weight": 1,
+      "papers": [
+        "paper-43"
+      ]
+    },
+    {
+      "source": "kw-植栽デザイン",
+      "target": "kw-緑視率",
+      "weight": 1,
+      "papers": [
+        "paper-43"
+      ]
+    },
+    {
+      "source": "kw-植栽デザイン",
+      "target": "kw-街路樹",
+      "weight": 1,
+      "papers": [
+        "paper-43"
+      ]
+    },
+    {
+      "source": "kw-歩行者快適性",
+      "target": "kw-緑視率",
+      "weight": 1,
+      "papers": [
+        "paper-43"
+      ]
+    },
+    {
+      "source": "kw-歩行者快適性",
+      "target": "kw-街路樹",
+      "weight": 1,
+      "papers": [
+        "paper-43"
+      ]
+    },
+    {
+      "source": "kw-緑視率",
+      "target": "kw-街路樹",
+      "weight": 1,
+      "papers": [
+        "paper-43"
+      ]
+    },
+    {
+      "source": "kw-VR",
+      "target": "kw-景観評価",
+      "weight": 1,
+      "papers": [
+        "paper-44"
+      ]
+    },
+    {
+      "source": "kw-VR",
+      "target": "kw-樹木間隔",
+      "weight": 1,
+      "papers": [
+        "paper-44"
+      ]
+    },
+    {
+      "source": "kw-VR",
+      "target": "kw-街路樹",
+      "weight": 1,
+      "papers": [
+        "paper-44"
+      ]
+    },
+    {
+      "source": "kw-景観評価",
+      "target": "kw-樹木間隔",
+      "weight": 1,
+      "papers": [
+        "paper-44"
+      ]
+    },
+    {
+      "source": "kw-景観評価",
+      "target": "kw-街路樹",
+      "weight": 1,
+      "papers": [
+        "paper-44"
+      ]
+    },
+    {
+      "source": "kw-樹木間隔",
+      "target": "kw-街路樹",
+      "weight": 1,
+      "papers": [
+        "paper-44"
+      ]
+    },
+    {
+      "source": "kw-SD法",
+      "target": "kw-密集市街地",
+      "weight": 1,
+      "papers": [
+        "paper-45"
+      ]
+    },
+    {
+      "source": "kw-SD法",
+      "target": "kw-植栽形態",
+      "weight": 1,
+      "papers": [
+        "paper-45"
+      ]
+    },
+    {
+      "source": "kw-SD法",
+      "target": "kw-緑視率",
+      "weight": 1,
+      "papers": [
+        "paper-45"
+      ]
+    },
+    {
+      "source": "kw-SD法",
+      "target": "kw-路地景観",
+      "weight": 1,
+      "papers": [
+        "paper-45"
+      ]
+    },
+    {
+      "source": "kw-密集市街地",
+      "target": "kw-植栽形態",
+      "weight": 1,
+      "papers": [
+        "paper-45"
+      ]
+    },
+    {
+      "source": "kw-密集市街地",
+      "target": "kw-緑視率",
+      "weight": 1,
+      "papers": [
+        "paper-45"
+      ]
+    },
+    {
+      "source": "kw-密集市街地",
+      "target": "kw-路地景観",
+      "weight": 1,
+      "papers": [
+        "paper-45"
+      ]
+    },
+    {
+      "source": "kw-植栽形態",
+      "target": "kw-緑視率",
+      "weight": 1,
+      "papers": [
+        "paper-45"
+      ]
+    },
+    {
+      "source": "kw-植栽形態",
+      "target": "kw-路地景観",
+      "weight": 1,
+      "papers": [
+        "paper-45"
+      ]
+    },
+    {
+      "source": "kw-緑視率",
+      "target": "kw-路地景観",
+      "weight": 1,
+      "papers": [
+        "paper-45"
+      ]
+    },
+    {
+      "source": "kw-緑化景観評価",
+      "target": "kw-視野角度別緑視率",
+      "weight": 1,
+      "papers": [
+        "paper-46"
+      ]
+    },
+    {
+      "source": "kw-コンジョイント分析",
+      "target": "kw-景観選好",
+      "weight": 1,
+      "papers": [
+        "paper-47"
+      ]
+    },
+    {
+      "source": "kw-コンジョイント分析",
+      "target": "kw-空率",
+      "weight": 1,
+      "papers": [
+        "paper-47"
+      ]
+    },
+    {
+      "source": "kw-コンジョイント分析",
+      "target": "kw-緑視率",
+      "weight": 1,
+      "papers": [
+        "paper-47"
+      ]
+    },
+    {
+      "source": "kw-景観選好",
+      "target": "kw-空率",
+      "weight": 1,
+      "papers": [
+        "paper-47"
+      ]
+    },
+    {
+      "source": "kw-景観選好",
+      "target": "kw-緑視率",
+      "weight": 1,
+      "papers": [
+        "paper-47"
+      ]
+    },
+    {
+      "source": "kw-空率",
+      "target": "kw-緑視率",
+      "weight": 1,
+      "papers": [
+        "paper-47"
+      ]
+    },
+    {
+      "source": "kw-Google Street View",
+      "target": "kw-パノラマ画像",
+      "weight": 1,
+      "papers": [
+        "paper-48"
+      ]
+    },
+    {
+      "source": "kw-Google Street View",
+      "target": "kw-景観分析",
+      "weight": 1,
+      "papers": [
+        "paper-48"
+      ]
+    },
+    {
+      "source": "kw-Google Street View",
+      "target": "kw-緑の占有率",
+      "weight": 1,
+      "papers": [
+        "paper-48"
+      ]
+    },
+    {
+      "source": "kw-パノラマ画像",
+      "target": "kw-景観分析",
+      "weight": 1,
+      "papers": [
+        "paper-48"
+      ]
+    },
+    {
+      "source": "kw-パノラマ画像",
+      "target": "kw-緑の占有率",
+      "weight": 1,
+      "papers": [
+        "paper-48"
+      ]
+    },
+    {
+      "source": "kw-景観分析",
+      "target": "kw-緑の占有率",
+      "weight": 1,
+      "papers": [
+        "paper-48"
+      ]
+    },
+    {
+      "source": "kw-3D-CAD",
+      "target": "kw-AMAP",
+      "weight": 1,
+      "papers": [
+        "paper-49"
+      ]
+    },
+    {
+      "source": "kw-3D-CAD",
+      "target": "kw-植物成長モデル",
+      "weight": 1,
+      "papers": [
+        "paper-49"
+      ]
+    },
+    {
+      "source": "kw-3D-CAD",
+      "target": "kw-造園設計",
+      "weight": 1,
+      "papers": [
+        "paper-49"
+      ]
+    },
+    {
+      "source": "kw-AMAP",
+      "target": "kw-植物成長モデル",
+      "weight": 1,
+      "papers": [
+        "paper-49"
+      ]
+    },
+    {
+      "source": "kw-AMAP",
+      "target": "kw-造園設計",
+      "weight": 1,
+      "papers": [
+        "paper-49"
+      ]
+    },
+    {
+      "source": "kw-植物成長モデル",
+      "target": "kw-造園設計",
+      "weight": 1,
+      "papers": [
+        "paper-49"
+      ]
+    }
+  ],
+  "papers": [
     {
       "id": "paper-1",
       "no": 1,
@@ -1241,1430 +5673,6 @@ body {
       "relevance": 2
     }
   ],
-  "edges": [
-    {
-      "source": "paper-1",
-      "target": "this-study",
-      "type": "main",
-      "weight": 5,
-      "shared": []
-    },
-    {
-      "source": "paper-2",
-      "target": "this-study",
-      "type": "main",
-      "weight": 4,
-      "shared": []
-    },
-    {
-      "source": "paper-3",
-      "target": "this-study",
-      "type": "main",
-      "weight": 3,
-      "shared": []
-    },
-    {
-      "source": "paper-4",
-      "target": "this-study",
-      "type": "main",
-      "weight": 5,
-      "shared": []
-    },
-    {
-      "source": "paper-5",
-      "target": "this-study",
-      "type": "main",
-      "weight": 5,
-      "shared": []
-    },
-    {
-      "source": "paper-6",
-      "target": "this-study",
-      "type": "main",
-      "weight": 4,
-      "shared": []
-    },
-    {
-      "source": "paper-7",
-      "target": "this-study",
-      "type": "main",
-      "weight": 4,
-      "shared": []
-    },
-    {
-      "source": "paper-8",
-      "target": "this-study",
-      "type": "main",
-      "weight": 4,
-      "shared": []
-    },
-    {
-      "source": "paper-9",
-      "target": "this-study",
-      "type": "main",
-      "weight": 3,
-      "shared": []
-    },
-    {
-      "source": "paper-10",
-      "target": "this-study",
-      "type": "main",
-      "weight": 5,
-      "shared": []
-    },
-    {
-      "source": "paper-11",
-      "target": "this-study",
-      "type": "main",
-      "weight": 3,
-      "shared": []
-    },
-    {
-      "source": "paper-12",
-      "target": "this-study",
-      "type": "main",
-      "weight": 5,
-      "shared": []
-    },
-    {
-      "source": "paper-13",
-      "target": "this-study",
-      "type": "main",
-      "weight": 5,
-      "shared": []
-    },
-    {
-      "source": "paper-14",
-      "target": "this-study",
-      "type": "main",
-      "weight": 5,
-      "shared": []
-    },
-    {
-      "source": "paper-15",
-      "target": "this-study",
-      "type": "main",
-      "weight": 5,
-      "shared": []
-    },
-    {
-      "source": "paper-16",
-      "target": "this-study",
-      "type": "main",
-      "weight": 4,
-      "shared": []
-    },
-    {
-      "source": "paper-17",
-      "target": "this-study",
-      "type": "main",
-      "weight": 4,
-      "shared": []
-    },
-    {
-      "source": "paper-18",
-      "target": "this-study",
-      "type": "main",
-      "weight": 4,
-      "shared": []
-    },
-    {
-      "source": "paper-19",
-      "target": "this-study",
-      "type": "main",
-      "weight": 5,
-      "shared": []
-    },
-    {
-      "source": "paper-20",
-      "target": "this-study",
-      "type": "main",
-      "weight": 4,
-      "shared": []
-    },
-    {
-      "source": "paper-21",
-      "target": "this-study",
-      "type": "main",
-      "weight": 4,
-      "shared": []
-    },
-    {
-      "source": "paper-22",
-      "target": "this-study",
-      "type": "main",
-      "weight": 5,
-      "shared": []
-    },
-    {
-      "source": "paper-23",
-      "target": "this-study",
-      "type": "main",
-      "weight": 3,
-      "shared": []
-    },
-    {
-      "source": "paper-24",
-      "target": "this-study",
-      "type": "main",
-      "weight": 3,
-      "shared": []
-    },
-    {
-      "source": "paper-25",
-      "target": "this-study",
-      "type": "main",
-      "weight": 3,
-      "shared": []
-    },
-    {
-      "source": "paper-26",
-      "target": "this-study",
-      "type": "main",
-      "weight": 5,
-      "shared": []
-    },
-    {
-      "source": "paper-27",
-      "target": "this-study",
-      "type": "main",
-      "weight": 5,
-      "shared": []
-    },
-    {
-      "source": "paper-28",
-      "target": "this-study",
-      "type": "main",
-      "weight": 4,
-      "shared": []
-    },
-    {
-      "source": "paper-29",
-      "target": "this-study",
-      "type": "main",
-      "weight": 4,
-      "shared": []
-    },
-    {
-      "source": "paper-30",
-      "target": "this-study",
-      "type": "main",
-      "weight": 4,
-      "shared": []
-    },
-    {
-      "source": "paper-31",
-      "target": "this-study",
-      "type": "main",
-      "weight": 3,
-      "shared": []
-    },
-    {
-      "source": "paper-32",
-      "target": "this-study",
-      "type": "main",
-      "weight": 3,
-      "shared": []
-    },
-    {
-      "source": "paper-33",
-      "target": "this-study",
-      "type": "main",
-      "weight": 4,
-      "shared": []
-    },
-    {
-      "source": "paper-34",
-      "target": "this-study",
-      "type": "main",
-      "weight": 3,
-      "shared": []
-    },
-    {
-      "source": "paper-35",
-      "target": "this-study",
-      "type": "main",
-      "weight": 4,
-      "shared": []
-    },
-    {
-      "source": "paper-36",
-      "target": "this-study",
-      "type": "main",
-      "weight": 5,
-      "shared": []
-    },
-    {
-      "source": "paper-37",
-      "target": "this-study",
-      "type": "main",
-      "weight": 4,
-      "shared": []
-    },
-    {
-      "source": "paper-38",
-      "target": "this-study",
-      "type": "main",
-      "weight": 5,
-      "shared": []
-    },
-    {
-      "source": "paper-39",
-      "target": "this-study",
-      "type": "main",
-      "weight": 4,
-      "shared": []
-    },
-    {
-      "source": "paper-40",
-      "target": "this-study",
-      "type": "main",
-      "weight": 5,
-      "shared": []
-    },
-    {
-      "source": "paper-41",
-      "target": "this-study",
-      "type": "main",
-      "weight": 4,
-      "shared": []
-    },
-    {
-      "source": "paper-42",
-      "target": "this-study",
-      "type": "main",
-      "weight": 3,
-      "shared": []
-    },
-    {
-      "source": "paper-43",
-      "target": "this-study",
-      "type": "main",
-      "weight": 3,
-      "shared": []
-    },
-    {
-      "source": "paper-44",
-      "target": "this-study",
-      "type": "main",
-      "weight": 3,
-      "shared": []
-    },
-    {
-      "source": "paper-45",
-      "target": "this-study",
-      "type": "main",
-      "weight": 2,
-      "shared": []
-    },
-    {
-      "source": "paper-46",
-      "target": "this-study",
-      "type": "main",
-      "weight": 3,
-      "shared": []
-    },
-    {
-      "source": "paper-47",
-      "target": "this-study",
-      "type": "main",
-      "weight": 3,
-      "shared": []
-    },
-    {
-      "source": "paper-48",
-      "target": "this-study",
-      "type": "main",
-      "weight": 2,
-      "shared": []
-    },
-    {
-      "source": "paper-49",
-      "target": "this-study",
-      "type": "main",
-      "weight": 2,
-      "shared": []
-    },
-    {
-      "source": "paper-1",
-      "target": "paper-2",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "景観評価"
-      ]
-    },
-    {
-      "source": "paper-1",
-      "target": "paper-6",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-1",
-      "target": "paper-27",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-1",
-      "target": "paper-36",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-1",
-      "target": "paper-38",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-1",
-      "target": "paper-39",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-1",
-      "target": "paper-40",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-1",
-      "target": "paper-43",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-1",
-      "target": "paper-44",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "景観評価"
-      ]
-    },
-    {
-      "source": "paper-1",
-      "target": "paper-45",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-1",
-      "target": "paper-47",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-2",
-      "target": "paper-3",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "Green View Index"
-      ]
-    },
-    {
-      "source": "paper-2",
-      "target": "paper-8",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "Green View Index"
-      ]
-    },
-    {
-      "source": "paper-2",
-      "target": "paper-14",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "Green View Index"
-      ]
-    },
-    {
-      "source": "paper-2",
-      "target": "paper-44",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "景観評価"
-      ]
-    },
-    {
-      "source": "paper-2",
-      "target": "paper-48",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "Google Street View"
-      ]
-    },
-    {
-      "source": "paper-3",
-      "target": "paper-8",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "Green View Index"
-      ]
-    },
-    {
-      "source": "paper-3",
-      "target": "paper-14",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "Green View Index"
-      ]
-    },
-    {
-      "source": "paper-4",
-      "target": "paper-26",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "都市植生"
-      ]
-    },
-    {
-      "source": "paper-5",
-      "target": "paper-7",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "LiDAR"
-      ]
-    },
-    {
-      "source": "paper-6",
-      "target": "paper-27",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-6",
-      "target": "paper-36",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-6",
-      "target": "paper-38",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-6",
-      "target": "paper-39",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-6",
-      "target": "paper-40",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-6",
-      "target": "paper-43",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-6",
-      "target": "paper-45",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-6",
-      "target": "paper-47",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-8",
-      "target": "paper-14",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "Green View Index"
-      ]
-    },
-    {
-      "source": "paper-8",
-      "target": "paper-26",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "深層学習"
-      ]
-    },
-    {
-      "source": "paper-9",
-      "target": "paper-35",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "GVI"
-      ]
-    },
-    {
-      "source": "paper-10",
-      "target": "paper-20",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "GIS"
-      ]
-    },
-    {
-      "source": "paper-10",
-      "target": "paper-22",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "GIS"
-      ]
-    },
-    {
-      "source": "paper-12",
-      "target": "paper-13",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "樹木配置"
-      ]
-    },
-    {
-      "source": "paper-12",
-      "target": "paper-15",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "樹木配置"
-      ]
-    },
-    {
-      "source": "paper-12",
-      "target": "paper-19",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "樹木配置"
-      ]
-    },
-    {
-      "source": "paper-12",
-      "target": "paper-29",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "CFD"
-      ]
-    },
-    {
-      "source": "paper-12",
-      "target": "paper-36",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "樹木配置"
-      ]
-    },
-    {
-      "source": "paper-12",
-      "target": "paper-37",
-      "type": "keyword",
-      "weight": 2,
-      "shared": [
-        "樹木配置",
-        "CFD"
-      ]
-    },
-    {
-      "source": "paper-12",
-      "target": "paper-40",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "樹木配置"
-      ]
-    },
-    {
-      "source": "paper-12",
-      "target": "paper-42",
-      "type": "keyword",
-      "weight": 2,
-      "shared": [
-        "樹木配置",
-        "CFD"
-      ]
-    },
-    {
-      "source": "paper-13",
-      "target": "paper-15",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "樹木配置"
-      ]
-    },
-    {
-      "source": "paper-13",
-      "target": "paper-19",
-      "type": "keyword",
-      "weight": 2,
-      "shared": [
-        "遺伝的アルゴリズム",
-        "樹木配置"
-      ]
-    },
-    {
-      "source": "paper-13",
-      "target": "paper-23",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "遺伝的アルゴリズム"
-      ]
-    },
-    {
-      "source": "paper-13",
-      "target": "paper-24",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "MRT"
-      ]
-    },
-    {
-      "source": "paper-13",
-      "target": "paper-32",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "エージェントベースモデル"
-      ]
-    },
-    {
-      "source": "paper-13",
-      "target": "paper-36",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "樹木配置"
-      ]
-    },
-    {
-      "source": "paper-13",
-      "target": "paper-37",
-      "type": "keyword",
-      "weight": 2,
-      "shared": [
-        "MRT",
-        "樹木配置"
-      ]
-    },
-    {
-      "source": "paper-13",
-      "target": "paper-40",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "樹木配置"
-      ]
-    },
-    {
-      "source": "paper-13",
-      "target": "paper-42",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "樹木配置"
-      ]
-    },
-    {
-      "source": "paper-14",
-      "target": "paper-16",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "UTCI"
-      ]
-    },
-    {
-      "source": "paper-14",
-      "target": "paper-22",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "NSGA-II"
-      ]
-    },
-    {
-      "source": "paper-14",
-      "target": "paper-24",
-      "type": "keyword",
-      "weight": 2,
-      "shared": [
-        "NSGA-II",
-        "UTCI"
-      ]
-    },
-    {
-      "source": "paper-14",
-      "target": "paper-36",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "多目的最適化"
-      ]
-    },
-    {
-      "source": "paper-15",
-      "target": "paper-17",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "平均放射温度"
-      ]
-    },
-    {
-      "source": "paper-15",
-      "target": "paper-19",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "樹木配置"
-      ]
-    },
-    {
-      "source": "paper-15",
-      "target": "paper-36",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "樹木配置"
-      ]
-    },
-    {
-      "source": "paper-15",
-      "target": "paper-37",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "樹木配置"
-      ]
-    },
-    {
-      "source": "paper-15",
-      "target": "paper-40",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "樹木配置"
-      ]
-    },
-    {
-      "source": "paper-15",
-      "target": "paper-42",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "樹木配置"
-      ]
-    },
-    {
-      "source": "paper-16",
-      "target": "paper-24",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "UTCI"
-      ]
-    },
-    {
-      "source": "paper-17",
-      "target": "paper-21",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "樹木配置最適化"
-      ]
-    },
-    {
-      "source": "paper-19",
-      "target": "paper-23",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "遺伝的アルゴリズム"
-      ]
-    },
-    {
-      "source": "paper-19",
-      "target": "paper-36",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "樹木配置"
-      ]
-    },
-    {
-      "source": "paper-19",
-      "target": "paper-37",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "樹木配置"
-      ]
-    },
-    {
-      "source": "paper-19",
-      "target": "paper-40",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "樹木配置"
-      ]
-    },
-    {
-      "source": "paper-19",
-      "target": "paper-42",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "樹木配置"
-      ]
-    },
-    {
-      "source": "paper-20",
-      "target": "paper-22",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "GIS"
-      ]
-    },
-    {
-      "source": "paper-22",
-      "target": "paper-24",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "NSGA-II"
-      ]
-    },
-    {
-      "source": "paper-24",
-      "target": "paper-37",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "MRT"
-      ]
-    },
-    {
-      "source": "paper-25",
-      "target": "paper-43",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "街路樹"
-      ]
-    },
-    {
-      "source": "paper-25",
-      "target": "paper-44",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "街路樹"
-      ]
-    },
-    {
-      "source": "paper-26",
-      "target": "paper-29",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "3D Gaussian Splatting"
-      ]
-    },
-    {
-      "source": "paper-26",
-      "target": "paper-30",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "3D Gaussian Splatting"
-      ]
-    },
-    {
-      "source": "paper-26",
-      "target": "paper-31",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "3D Gaussian Splatting"
-      ]
-    },
-    {
-      "source": "paper-27",
-      "target": "paper-36",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-27",
-      "target": "paper-38",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-27",
-      "target": "paper-39",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-27",
-      "target": "paper-40",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-27",
-      "target": "paper-43",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-27",
-      "target": "paper-45",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-27",
-      "target": "paper-47",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-28",
-      "target": "paper-30",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "ドローン"
-      ]
-    },
-    {
-      "source": "paper-28",
-      "target": "paper-34",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "NeRF"
-      ]
-    },
-    {
-      "source": "paper-29",
-      "target": "paper-30",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "3D Gaussian Splatting"
-      ]
-    },
-    {
-      "source": "paper-29",
-      "target": "paper-31",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "3D Gaussian Splatting"
-      ]
-    },
-    {
-      "source": "paper-29",
-      "target": "paper-37",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "CFD"
-      ]
-    },
-    {
-      "source": "paper-29",
-      "target": "paper-42",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "CFD"
-      ]
-    },
-    {
-      "source": "paper-30",
-      "target": "paper-31",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "3D Gaussian Splatting"
-      ]
-    },
-    {
-      "source": "paper-32",
-      "target": "paper-33",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "デジタルツイン"
-      ]
-    },
-    {
-      "source": "paper-34",
-      "target": "paper-44",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "VR"
-      ]
-    },
-    {
-      "source": "paper-35",
-      "target": "paper-48",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "パノラマ画像"
-      ]
-    },
-    {
-      "source": "paper-36",
-      "target": "paper-37",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "樹木配置"
-      ]
-    },
-    {
-      "source": "paper-36",
-      "target": "paper-38",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-36",
-      "target": "paper-39",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-36",
-      "target": "paper-40",
-      "type": "keyword",
-      "weight": 2,
-      "shared": [
-        "樹木配置",
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-36",
-      "target": "paper-42",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "樹木配置"
-      ]
-    },
-    {
-      "source": "paper-36",
-      "target": "paper-43",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-36",
-      "target": "paper-45",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-36",
-      "target": "paper-47",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-37",
-      "target": "paper-40",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "樹木配置"
-      ]
-    },
-    {
-      "source": "paper-37",
-      "target": "paper-42",
-      "type": "keyword",
-      "weight": 3,
-      "shared": [
-        "最適化",
-        "樹木配置",
-        "CFD"
-      ]
-    },
-    {
-      "source": "paper-38",
-      "target": "paper-39",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-38",
-      "target": "paper-40",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-38",
-      "target": "paper-43",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-38",
-      "target": "paper-45",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-38",
-      "target": "paper-47",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-39",
-      "target": "paper-40",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-39",
-      "target": "paper-43",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-39",
-      "target": "paper-45",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-39",
-      "target": "paper-47",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-40",
-      "target": "paper-42",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "樹木配置"
-      ]
-    },
-    {
-      "source": "paper-40",
-      "target": "paper-43",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-40",
-      "target": "paper-45",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-40",
-      "target": "paper-47",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-43",
-      "target": "paper-44",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "街路樹"
-      ]
-    },
-    {
-      "source": "paper-43",
-      "target": "paper-45",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-43",
-      "target": "paper-47",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    },
-    {
-      "source": "paper-45",
-      "target": "paper-47",
-      "type": "keyword",
-      "weight": 1,
-      "shared": [
-        "緑視率"
-      ]
-    }
-  ],
   "section_labels": {
     "A": {
       "en": "GVI Calculation",
@@ -2675,7 +5683,7 @@ body {
       "ja": "樹木配置最適化"
     },
     "C": {
-      "en": "Digital Twin / 3DGS",
+      "en": "Digital Twin/3DGS",
       "ja": "デジタルツイン・3DGS"
     },
     "D": {
@@ -2687,353 +5695,332 @@ body {
       "ja": "日本語文献"
     }
   },
+  "this_study_kws": [
+    "樹木配置",
+    "デジタルツイン",
+    "遺伝的アルゴリズム",
+    "CLIP",
+    "緑視率",
+    "3D Gaussian Splatting"
+  ],
   "meta": {
     "generated": "2026-04-03",
-    "total_papers": 49
+    "total_papers": 49,
+    "total_kws": 151
   }
-}
-</script>
-
+}</script>
 <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
 <script>
-// ── Data ───────────────────────────────────────────────────────────────────
-const raw = JSON.parse(document.getElementById('graph-data').textContent);
-const allNodes = raw.nodes.map(d => ({...d}));
-const allEdges = raw.edges.map(d => ({...d}));
-const secLabels = raw.section_labels;
+// ── data ──────────────────────────────────────────────────────────────────
+const D = JSON.parse(document.getElementById('gd').textContent);
+const KW_NODES = D.kw_nodes.map(d=>({...d}));
+const KW_EDGES = D.kw_edges.map(d=>({...d}));
+const PAPERS   = D.papers;
+const SEC_LBL  = D.section_labels;
+const THIS_KWS = new Set(D.this_study_kws);
 
-const COLOR = { CENTER:'#ffffff', A:'#4ade80', B:'#60a5fa', C:'#a78bfa', D:'#fb923c', E:'#f87171' };
-const SEC_COUNTS = {A:11, B:14, C:9, D:1, E:14};
-const SEC_DEFS = [
-  {id:'A', ja:'GVI計算手法'},
-  {id:'B', ja:'樹木配置最適化'},
-  {id:'C', ja:'デジタルツイン'},
-  {id:'D', ja:'景観品質評価'},
-  {id:'E', ja:'日本語文献'},
-];
+const COL = {A:'#4ade80',B:'#60a5fa',C:'#a78bfa',D:'#fb923c',E:'#f87171',MIX:'#94a3b8'};
+const SEC_DEF = [{id:'A',ja:'GVI計算手法'},{id:'B',ja:'樹木配置最適化'},{id:'C',ja:'デジタルツイン'},{id:'D',ja:'景観品質評価'},{id:'E',ja:'日本語文献'}];
+const SEC_CNT = {A:11,B:14,C:9,D:1,E:14};
 
-function nodeR(d) { return d.id==='this-study' ? 26 : 6+(d.relevance-2)*4; }
-
-// ── State ──────────────────────────────────────────────────────────────────
-const st = {
-  secs: new Set(['A','B','C','D','E']),
-  yMin:1987, yMax:2026, minRel:2,
-  kwEdges:false, query:'',
-};
-
-// ── SVG ─────────────────────────────────────────────────────────────────────
-const svg = d3.select('#graph-svg');
-const W = () => document.getElementById('graph-container').clientWidth;
-const H = () => document.getElementById('graph-container').clientHeight;
-
-const defs = svg.append('defs');
-function addGlow(id, col, std) {
-  const f = defs.append('filter').attr('id',id).attr('x','-60%').attr('y','-60%').attr('width','220%').attr('height','220%');
-  f.append('feGaussianBlur').attr('stdDeviation',std).attr('result','b');
-  f.append('feFlood').attr('flood-color',col).attr('flood-opacity','0.5').attr('result','c');
-  f.append('feComposite').attr('in','c').attr('in2','b').attr('operator','in').attr('result','g');
-  const m = f.append('feMerge');
-  m.append('feMergeNode').attr('in','g');
-  m.append('feMergeNode').attr('in','SourceGraphic');
+function kwR(d) {
+  // radius: 8-32 based on count
+  if (d.rare) return 4.5;
+  return Math.max(8, Math.min(32, 8 + (d.count-1)*4));
 }
-addGlow('glow-center','#ffffff',7);
-Object.entries(COLOR).forEach(([k,c]) => { if(k!=='CENTER') addGlow('glow-'+k,c,4); });
 
-const zG    = svg.append('g').attr('id','zg');
-const kwG   = zG.append('g');
-const mainG = zG.append('g');
-const nodeG = zG.append('g');
-const labG  = zG.append('g');
+// ── state ──────────────────────────────────────────────────────────────────
+const st = { secs:new Set(['A','B','C','D','E']), showRare:false, hlThis:true, q:'' };
+// current panel state
+let panelKw = null;  // keyword label currently shown
 
-const zoom = d3.zoom().scaleExtent([0.15,6]).on('zoom', e => zG.attr('transform',e.transform));
+// ── svg ────────────────────────────────────────────────────────────────────
+const svg = d3.select('#gs');
+const W=()=>document.getElementById('gc').clientWidth;
+const H=()=>document.getElementById('gc').clientHeight;
+
+const defs=svg.append('defs');
+function addGlow(id,col,std){
+  const f=defs.append('filter').attr('id',id).attr('x','-80%').attr('y','-80%').attr('width','260%').attr('height','260%');
+  f.append('feGaussianBlur').attr('stdDeviation',std).attr('result','b');
+  f.append('feFlood').attr('flood-color',col).attr('flood-opacity','.55').attr('result','c');
+  f.append('feComposite').attr('in','c').attr('in2','b').attr('operator','in').attr('result','g');
+  const m=f.append('feMerge'); m.append('feMergeNode').attr('in','g'); m.append('feMergeNode').attr('in','SourceGraphic');
+}
+addGlow('glow-gold','#fbbf24',6);
+Object.entries(COL).forEach(([k,c])=>addGlow('glow-'+k,c,4));
+
+const zG=svg.append('g');
+const eG=zG.append('g');
+const nG=zG.append('g');
+const lG=zG.append('g');
+
+const zoom=d3.zoom().scaleExtent([0.1,8]).on('zoom',e=>zG.attr('transform',e.transform));
 svg.call(zoom);
 
-// ── Simulation ──────────────────────────────────────────────────────────────
-const nodes = allNodes;
-const edges = allEdges;
+// ── simulation ────────────────────────────────────────────────────────────
+const sim=d3.forceSimulation(KW_NODES)
+  .force('link',d3.forceLink(KW_EDGES).id(d=>d.id)
+    .distance(d=>{
+      const srcR=kwR(KW_NODES.find(n=>n.id===(d.source.id||d.source))||{count:1,rare:true});
+      const tgtR=kwR(KW_NODES.find(n=>n.id===(d.target.id||d.target))||{count:1,rare:true});
+      return srcR+tgtR+30+(3-Math.min(d.weight,3))*20;
+    })
+    .strength(d=>d.weight>=2?0.4:0.15))
+  .force('charge',d3.forceManyBody().strength(d=>d.rare?-50:-(kwR(d)**2)*0.7))
+  .force('center',d3.forceCenter(W()/2,H()/2))
+  .force('collide',d3.forceCollide().radius(d=>kwR(d)+6))
+  .alphaDecay(0.016)
+  .on('tick',tick);
 
-const sim = d3.forceSimulation(nodes)
-  .force('link', d3.forceLink(edges).id(d=>d.id)
-    .distance(d => d.type==='main' ? 150-d.weight*13 : 190)
-    .strength(d => d.type==='main' ? 0.32 : 0.04))
-  .force('charge', d3.forceManyBody().strength(d => d.id==='this-study' ? -1100 : -140))
-  .force('center', d3.forceCenter(W()/2, H()/2))
-  .force('collide', d3.forceCollide().radius(d => nodeR(d)+5))
-  .force('radial', d3.forceRadial(d => d.id==='this-study' ? 0 : 310, W()/2, H()/2).strength(0.07))
-  .alphaDecay(0.018)
-  .on('tick', tick);
+// ── render edges ──────────────────────────────────────────────────────────
+const eSel=eG.selectAll('line').data(KW_EDGES).join('line')
+  .attr('stroke','#334466')
+  .attr('stroke-opacity',0.6);
 
-// ── Edges ───────────────────────────────────────────────────────────────────
-const mainLines = mainG.selectAll('line')
-  .data(edges.filter(e=>e.type==='main'))
-  .join('line')
-  .attr('stroke', d => {
-    const s = nodes.find(n => n.id===(d.source.id||d.source));
-    return s ? COLOR[s.group]||'#888' : '#888';
-  })
-  .attr('stroke-width', d => d.weight*0.55)
-  .attr('stroke-opacity', 0.6);
-
-const kwLines = kwG.selectAll('line')
-  .data(edges.filter(e=>e.type==='keyword'))
-  .join('line')
-  .attr('stroke','#94a3b8')
-  .attr('stroke-width',0.7)
-  .attr('stroke-dasharray','3 4')
-  .attr('stroke-opacity',0);
-
-// ── Nodes ────────────────────────────────────────────────────────────────────
-const nodeGs = nodeG.selectAll('g')
-  .data(nodes).join('g')
+// ── render nodes ──────────────────────────────────────────────────────────
+const nSel=nG.selectAll('g').data(KW_NODES).join('g')
   .style('cursor','pointer')
   .call(d3.drag()
-    .on('start',(e,d)=>{ if(!e.active) sim.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y; })
-    .on('drag', (e,d)=>{ d.fx=e.x; d.fy=e.y; })
-    .on('end',  (e,d)=>{ if(!e.active) sim.alphaTarget(0); d.fx=null; d.fy=null; }));
+    .on('start',(e,d)=>{if(!e.active)sim.alphaTarget(0.3).restart();d.fx=d.x;d.fy=d.y;})
+    .on('drag', (e,d)=>{d.fx=e.x;d.fy=e.y;})
+    .on('end',  (e,d)=>{if(!e.active)sim.alphaTarget(0);d.fx=null;d.fy=null;}));
 
-nodeGs.append('circle')
-  .attr('r', d=>nodeR(d))
-  .attr('fill', d=>COLOR[d.group]||'#888')
-  .attr('fill-opacity', d=>d.id==='this-study'?1:0.85)
-  .attr('filter', d=>d.id==='this-study'?'url(#glow-center)':null)
-  .attr('stroke', d=>d.id==='this-study'?'#fff':'none')
-  .attr('stroke-width', d=>d.id==='this-study'?2:0);
+// background halo for this-study keywords
+nSel.filter(d=>d.thisStudy)
+  .append('circle')
+  .attr('r',d=>kwR(d)+5)
+  .attr('fill','none')
+  .attr('stroke','#fbbf24')
+  .attr('stroke-width',1.5)
+  .attr('stroke-opacity',0.7)
+  .attr('stroke-dasharray','4 3');
 
-// Labels for center + high-relevance papers
-const labData = nodes.filter(d=>d.id==='this-study'||d.relevance>=4);
-const labSels = labG.selectAll('text')
-  .data(labData).join('text')
-  .attr('class','node-label')
+nSel.append('circle')
+  .attr('r',d=>kwR(d))
+  .attr('fill',d=>d.color)
+  .attr('fill-opacity',d=>d.rare?0.4:0.88)
+  .attr('filter',d=>d.thisStudy?'url(#glow-gold)':d.rare?null:`url(#glow-${d.section})`);
+
+// labels: non-rare + this-study
+const labData=KW_NODES.filter(d=>!d.rare||d.thisStudy);
+const lSel=lG.selectAll('text').data(labData).join('text')
+  .attr('class','nl')
   .attr('text-anchor','middle')
-  .attr('fill', d=>d.id==='this-study'?'#fff':COLOR[d.group])
-  .attr('font-size', d=>d.id==='this-study'?12:8.5)
-  .attr('font-weight', d=>d.id==='this-study'?700:400)
-  .attr('opacity', d=>d.id==='this-study'?1:0.8)
-  .text(d=>{
-    if(d.id==='this-study') return '本研究 / This Study';
-    const t=d.title; return t.length>22?t.slice(0,20)+'…':t;
-  });
+  .attr('fill',d=>d.thisStudy?'#fbbf24':d.color)
+  .attr('font-size',d=>d.thisStudy?12:d.count>=5?11:9.5)
+  .attr('font-weight',d=>d.thisStudy||d.count>=4?700:400)
+  .attr('opacity',0.95)
+  .text(d=>d.label);
 
-// ── Tick ─────────────────────────────────────────────────────────────────────
-function tick() {
-  mainLines.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
-  kwLines.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
-  nodeGs.attr('transform',d=>`translate(${d.x},${d.y})`);
-  labSels.each(function(d){
-    const n=nodes.find(n=>n.id===d.id);
-    if(n) d3.select(this).attr('transform',`translate(${n.x},${n.y})`).attr('dy',-(nodeR(n)+5));
+// ── tick ───────────────────────────────────────────────────────────────────
+function tick(){
+  eSel.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y)
+      .attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+  nSel.attr('transform',d=>`translate(${d.x},${d.y})`);
+  lSel.each(function(d){
+    const n=KW_NODES.find(n=>n.id===d.id);
+    if(n) d3.select(this).attr('transform',`translate(${n.x},${n.y})`).attr('dy',-(kwR(n)+6));
   });
 }
 
-// ── Tooltip ──────────────────────────────────────────────────────────────────
-const tip = document.getElementById('tooltip');
-nodeGs
+// ── tooltip ────────────────────────────────────────────────────────────────
+const tt=document.getElementById('tt');
+nSel
   .on('mouseover',(ev,d)=>{
-    if(d.id==='this-study') return;
-    const aShort = d.author.includes(',') ? d.author.split(',')[0].trim()+' et al.' : d.author;
-    const sl = secLabels[d.group]||{en:d.group,ja:''};
-    tip.innerHTML = `
-      <div class="tt-sec" style="color:${COLOR[d.group]}">${sl.en} / ${sl.ja}</div>
-      <div class="tt-ttl">${d.title}</div>
-      <div class="tt-meta">${aShort} (${d.year})</div>
-      <div><span class="son">${'&#9733;'.repeat(d.relevance)}</span><span class="soff">${'&#9733;'.repeat(5-d.relevance)}</span></div>`;
-    tip.style.display='block';
-    hlConnected(d);
+    const sl=SEC_LBL[d.section]||{en:d.section,ja:''};
+    tt.innerHTML=`
+      <div class="tt-g" style="color:${d.thisStudy?'#fbbf24':d.color}">${d.thisStudy?'★ 本研究のキーワード':sl.en+' / '+sl.ja}</div>
+      <div class="tt-n">${d.label}</div>
+      <div class="tt-c">${d.count}本の論文で使用 &nbsp;·&nbsp; クリックで論文一覧</div>`;
+    tt.style.display='block';
+    hlNode(d);
   })
   .on('mousemove',ev=>{
-    tip.style.left = Math.min(ev.clientX+14,window.innerWidth-275)+'px';
-    tip.style.top  = Math.min(ev.clientY+14,window.innerHeight-110)+'px';
+    tt.style.left=Math.min(ev.clientX+13,window.innerWidth-260)+'px';
+    tt.style.top =Math.min(ev.clientY+13,window.innerHeight-90)+'px';
   })
-  .on('mouseout',(ev,d)=>{ tip.style.display='none'; resetHl(); });
+  .on('mouseout',()=>{ tt.style.display='none'; resetHl(); });
 
-// ── Click ────────────────────────────────────────────────────────────────────
-nodeGs.on('click',(ev,d)=>{
+// ── click: show paper list ────────────────────────────────────────────────
+nSel.on('click',(ev,d)=>{
   ev.stopPropagation();
-  showPanel(d);
+  panelKw=d.label;
+  showKwPanel(d);
 });
-svg.on('click',()=>{ document.getElementById('info-panel').classList.remove('open'); resetHl(); });
-document.getElementById('close-panel').addEventListener('click',()=>{ document.getElementById('info-panel').classList.remove('open'); resetHl(); });
+svg.on('click',()=>{ closePanel(); resetHl(); });
+document.getElementById('rp-close').addEventListener('click',()=>{ closePanel(); resetHl(); });
 
-function showPanel(d) {
-  const urlH = d.url
-    ? `<a class="doi-link" href="${d.url}" target="_blank" rel="noopener">Open paper &#8599;</a>`
-    : `<span class="doi-none">DOI / URL not available</span>`;
-  const kws = d.keywords.map(k=>`<span class="kw-chip">${k}</span>`).join('');
-  const sl = secLabels[d.group]||{en:d.group,ja:''};
-  const badgeColor = COLOR[d.group]||'#888';
-  const starsHtml = `<span class="son">${'&#9733;'.repeat(d.relevance)}</span><span class="soff">${'&#9733;'.repeat(5-d.relevance)}</span>`;
-
-  let html = '';
-  if (d.id !== 'this-study') {
-    html = `
-      <div class="i-badge" style="color:${badgeColor};border-color:${badgeColor};background:${badgeColor}1a">
-        ${sl.en} / ${sl.ja}
-      </div>
-      <div class="i-title">${d.title}</div>
-      <div class="i-meta">
-        <span>${d.author}</span>
-        <span class="i-jrn">${d.journal}</span>
-        <span class="i-yr">${d.year}</span>
-      </div>
-      <div class="i-stars">${starsHtml}</div>
-      <div class="i-kws">${kws}</div>
-      <div class="i-sec"><h3>概要 / Summary</h3><p>${d.summary||'（記載なし）'}</p></div>
-      <div class="i-sec"><h3>本研究との関連 / Relationship</h3><p>${d.relationship||'（記載なし）'}</p></div>
-      <div>${urlH}</div>`;
-  } else {
-    html = `
-      <div class="i-badge" style="color:#fff;border-color:#fff;background:#ffffff1a">本研究 / This Study</div>
-      <div class="i-title">${d.title}</div>
-      <div class="i-meta"><span>${d.author}</span><span class="i-jrn">${d.journal}</span><span class="i-yr">${d.year}</span></div>
-      <div class="i-kws">${d.keywords.map(k=>`<span class="kw-chip">${k}</span>`).join('')}</div>
-      <div class="i-sec"><h3>概要</h3><p>${d.summary}</p></div>`;
-  }
-  document.getElementById('info-content').innerHTML = html;
-  document.getElementById('info-panel').classList.add('open');
+function closePanel(){
+  panelKw=null;
+  document.getElementById('rp').classList.remove('open');
 }
 
-// ── Highlight ─────────────────────────────────────────────────────────────────
-function hlConnected(target) {
-  const conn = new Set([target.id,'this-study']);
-  edges.forEach(e=>{
+function showKwPanel(d){
+  const papersForKw=PAPERS.filter(p=>p.keywords.includes(d.label))
+    .sort((a,b)=>b.relevance-a.relevance||a.year-b.year);
+  const sl=SEC_LBL[d.section]||{en:d.section,ja:''};
+  const thisTag=d.thisStudy?`<div class="kw-this">★ 本研究のキーワード</div>`:'';
+  const cards=papersForKw.map(p=>`
+    <div class="pc" onclick="showPaperDetail('${p.id}','${d.label}')">
+      <div class="pc-sec" style="color:${COL[p.group]||'#888'}">${(SEC_LBL[p.group]||{ja:p.group}).ja}</div>
+      <div class="pc-ttl">${p.title}</div>
+      <div class="pc-meta">${shortAuthor(p.author)} (${p.year})</div>
+      <div class="pc-stars"><span class="son">${'&#9733;'.repeat(p.relevance)}</span><span class="soff">${'&#9733;'.repeat(5-p.relevance)}</span></div>
+    </div>`).join('');
+
+  document.getElementById('rp-content').innerHTML=`
+    <div class="kw-hd">
+      <div class="kw-name" style="color:${d.thisStudy?'#fbbf24':d.color}">${d.label}</div>
+      <div class="kw-meta">${d.count}本の論文で使用 &nbsp;·&nbsp; セクション: ${sl.ja}</div>
+      ${thisTag}
+    </div>
+    <div class="pc-list">${cards}</div>`;
+  document.getElementById('rp').classList.add('open');
+}
+
+function showPaperDetail(paperId, fromKw){
+  const p=PAPERS.find(p=>p.id===paperId);
+  if(!p) return;
+  const col=COL[p.group]||'#888';
+  const sl=SEC_LBL[p.group]||{en:p.group,ja:p.group};
+  const urlH=p.url?`<a class="doi-a" href="${p.url}" target="_blank" rel="noopener">Open paper &#8599;</a>`:`<span class="doi-n">DOI / URL not available</span>`;
+  const kws=p.keywords.map(k=>`<span class="kc${k===fromKw?' hl':''}">${k}</span>`).join('');
+  document.getElementById('rp-content').innerHTML=`
+    <div class="back-btn" onclick="backToKw('${fromKw}')">&#8592; ${fromKw}</div>
+    <div class="pd-badge" style="color:${col};border-color:${col};background:${col}1a">${sl.en} / ${sl.ja}</div>
+    <div class="pd-ttl">${p.title}</div>
+    <div class="pd-meta">
+      <span>${p.author}</span>
+      <span class="pd-jrn">${p.journal}</span>
+      <span class="pd-yr">${p.year}</span>
+    </div>
+    <div class="pd-stars"><span class="son">${'&#9733;'.repeat(p.relevance)}</span><span class="soff">${'&#9733;'.repeat(5-p.relevance)}</span></div>
+    <div class="pd-kws">${kws}</div>
+    <div class="pd-sec"><h3>概要 / Summary</h3><p>${p.summary||'（記載なし）'}</p></div>
+    <div class="pd-sec"><h3>本研究との関連</h3><p>${p.relationship||'（記載なし）'}</p></div>
+    <div>${urlH}</div>`;
+}
+
+function backToKw(kwLabel){
+  const d=KW_NODES.find(n=>n.label===kwLabel);
+  if(d) showKwPanel(d);
+}
+
+function shortAuthor(a){ return a.includes(',')?a.split(',')[0].trim()+' et al.':a; }
+
+// ── highlight ─────────────────────────────────────────────────────────────
+function hlNode(target){
+  const conn=new Set([target.id]);
+  KW_EDGES.forEach(e=>{
     const s=e.source.id||e.source, t=e.target.id||e.target;
     if(s===target.id||t===target.id){conn.add(s);conn.add(t);}
   });
-  nodeGs.attr('opacity',d=>conn.has(d.id)?1:0.1);
-  labSels.attr('opacity',d=>conn.has(d.id)?1:0.04);
-  mainLines.attr('stroke-opacity',d=>{
+  nSel.attr('opacity',d=>conn.has(d.id)?1:0.1);
+  lSel.attr('opacity',d=>conn.has(d.id)?1:0.05);
+  eSel.attr('stroke-opacity',d=>{
     const s=d.source.id,t=d.target.id;
-    return(s===target.id||t===target.id)?0.9:0.03;
+    return(s===target.id||t===target.id)?0.85:0.03;
+  }).attr('stroke-width',d=>{
+    const s=d.source.id,t=d.target.id;
+    return(s===target.id||t===target.id)?d.weight*1.2+0.8:0.8;
   });
 }
-function resetHl() { applyFilters(); }
 
-// ── Filters ──────────────────────────────────────────────────────────────────
-function visIds() {
-  const v = new Set(['this-study']);
-  nodes.forEach(n=>{
-    if(n.id==='this-study') return;
-    const ok = st.secs.has(n.group)
-      && n.year>=st.yMin && n.year<=st.yMax
-      && n.relevance>=st.minRel
-      && (!st.query || [n.title,n.author,...n.keywords,n.summary].join(' ').toLowerCase().includes(st.query));
-    if(ok) v.add(n.id);
+function resetHl(){ applyVis(); }
+
+// ── visibility filter ─────────────────────────────────────────────────────
+function visSet(){
+  const v=new Set();
+  KW_NODES.forEach(n=>{
+    if(n.rare&&!st.showRare) return;
+    // section filter: at least one of this kw's papers is in active section
+    const inSec=n.papers.some(pid=>{
+      const p=PAPERS.find(p=>p.id===pid);
+      return p && st.secs.has(p.group);
+    });
+    if(!inSec) return;
+    if(st.q){
+      if(!n.label.toLowerCase().includes(st.q)) return;
+    }
+    v.add(n.id);
   });
   return v;
 }
 
-function applyFilters() {
-  const v = visIds();
-  document.getElementById('vis-count').textContent = v.size-1;
-
-  nodeGs.attr('opacity',d=>v.has(d.id)?1:0.06)
-        .attr('pointer-events',d=>v.has(d.id)?'auto':'none');
-  labSels.attr('opacity',d=>{
-    if(d.id==='this-study') return 1;
-    return v.has(d.id)?0.8:0.03;
-  });
-  mainLines.attr('stroke-opacity',d=>{
+function applyVis(){
+  const v=visSet();
+  document.getElementById('kw-cnt').textContent=v.size;
+  nSel.attr('opacity',d=>v.has(d.id)?1:0.06)
+      .attr('pointer-events',d=>v.has(d.id)?'auto':'none');
+  lSel.attr('opacity',d=>v.has(d.id)?0.95:0.03);
+  eSel.attr('stroke-opacity',d=>{
     const s=d.source.id||d.source, t=d.target.id||d.target;
-    return (v.has(s)&&v.has(t))?0.6:0.03;
-  });
-  kwLines.attr('stroke-opacity',d=>{
+    return v.has(s)&&v.has(t)?0.5:0.02;
+  }).attr('stroke-width',d=>{
     const s=d.source.id||d.source, t=d.target.id||d.target;
-    return st.kwEdges&&v.has(s)&&v.has(t)?0.2:0;
+    return v.has(s)&&v.has(t)?d.weight*0.9+0.6:0.5;
   });
-  // Search rings
-  nodeGs.select('circle')
-    .attr('stroke',d=>{
-      if(d.id==='this-study') return '#fff';
-      if(!st.query) return 'none';
-      const m=[d.title,d.author,...d.keywords].join(' ').toLowerCase().includes(st.query);
-      return m&&v.has(d.id)?'#fbbf24':'none';
-    })
-    .attr('stroke-width',d=>{
-      if(d.id==='this-study') return 2;
-      if(!st.query) return 0;
-      const m=[d.title,d.author,...d.keywords].join(' ').toLowerCase().includes(st.query);
-      return m&&v.has(d.id)?3:0;
-    });
+  // this-study highlight rings
+  nSel.selectAll('circle:first-child')
+    .attr('stroke-opacity',d=>st.hlThis&&d.thisStudy&&v.has(d.id)?0.7:0);
 }
 
-// ── Build sidebar ─────────────────────────────────────────────────────────────
-// Sections
-const secGrid = document.getElementById('section-filters');
-SEC_DEFS.forEach(s=>{
+// ── sidebar controls ──────────────────────────────────────────────────────
+// section buttons
+const secGrid=document.getElementById('sec-btns');
+SEC_DEF.forEach(s=>{
   const btn=document.createElement('button');
-  btn.className='sec-btn active'; btn.dataset.sec=s.id;
-  btn.innerHTML=`<span class="dot" style="background:${COLOR[s.id]}"></span>${s.ja}`;
+  btn.className='sb-btn on'; btn.dataset.sec=s.id;
+  btn.innerHTML=`<span class="d" style="background:${COL[s.id]}"></span>${s.ja}`;
   btn.addEventListener('click',()=>{
-    if(st.secs.has(s.id)){st.secs.delete(s.id);btn.classList.remove('active');btn.classList.add('inactive');}
-    else{st.secs.add(s.id);btn.classList.remove('inactive');btn.classList.add('active');}
-    applyFilters();
+    if(st.secs.has(s.id)){st.secs.delete(s.id);btn.classList.replace('on','off');}
+    else{st.secs.add(s.id);btn.classList.replace('off','on');}
+    applyVis();
   });
   secGrid.appendChild(btn);
 });
 
-// Legend
-const legDiv = document.getElementById('legend-secs');
-SEC_DEFS.forEach(s=>{
-  const item=document.createElement('div'); item.className='leg-item';
-  item.innerHTML=`<span class="leg-dot" style="background:${COLOR[s.id]}"></span><span>${s.ja}</span><span class="leg-cnt">${SEC_COUNTS[s.id]}</span>`;
-  legDiv.appendChild(item);
+// legend
+const leg=document.getElementById('leg');
+SEC_DEF.forEach(s=>{
+  const li=document.createElement('div'); li.className='li';
+  li.innerHTML=`<span class="ld" style="background:${COL[s.id]}"></span><span>${s.ja}</span><span class="lc">${SEC_CNT[s.id]}</span>`;
+  leg.appendChild(li);
+});
+const li2=document.createElement('div'); li2.className='li';
+li2.innerHTML=`<span class="ld" style="background:#94a3b8"></span><span>複数セクション混在</span>`;
+leg.appendChild(li2);
+
+// toggles
+const tgRare=document.getElementById('tg-rare');
+tgRare.addEventListener('click',()=>{ st.showRare=!st.showRare; tgRare.classList.toggle('on',st.showRare); applyVis(); });
+
+const tgThis=document.getElementById('tg-this');
+tgThis.classList.add('on');
+tgThis.addEventListener('click',()=>{ st.hlThis=!st.hlThis; tgThis.classList.toggle('on',st.hlThis); applyVis(); });
+
+// search
+document.getElementById('q').addEventListener('input',function(){ st.q=this.value.trim().toLowerCase(); applyVis(); });
+
+// reset zoom
+document.getElementById('btn-rst').addEventListener('click',()=>{
+  svg.transition().duration(550).call(zoom.transform,d3.zoomIdentity.translate(W()/2,H()/2).scale(0.85).translate(-W()/2,-H()/2));
 });
 
-// Relevance buttons
-const relRow = document.getElementById('rel-filters');
-[2,3,4,5].forEach(r=>{
-  const btn=document.createElement('button'); btn.className='rel-btn'+(r===2?' active':'');
-  btn.textContent='★'.repeat(r); btn.dataset.rel=r;
-  btn.addEventListener('click',()=>{
-    st.minRel=r;
-    relRow.querySelectorAll('.rel-btn').forEach(b=>b.classList.toggle('active',+b.dataset.rel===r));
-    applyFilters();
-  });
-  relRow.appendChild(btn);
-});
-
-// Year slider
-const yMinI=document.getElementById('year-min'), yMaxI=document.getElementById('year-max');
-const rFill=document.getElementById('rng-fill');
-function updRange(){
-  const lo=(+yMinI.value-1987)/(2026-1987)*100;
-  const hi=(+yMaxI.value-1987)/(2026-1987)*100;
-  rFill.style.left=lo+'%'; rFill.style.width=(hi-lo)+'%';
-  document.getElementById('yr-min-lbl').textContent=yMinI.value;
-  document.getElementById('yr-max-lbl').textContent=yMaxI.value;
-}
-yMinI.addEventListener('input',()=>{ if(+yMinI.value>+yMaxI.value) yMinI.value=yMaxI.value; st.yMin=+yMinI.value; updRange(); applyFilters(); });
-yMaxI.addEventListener('input',()=>{ if(+yMaxI.value<+yMinI.value) yMaxI.value=yMinI.value; st.yMax=+yMaxI.value; updRange(); applyFilters(); });
-updRange();
-
-// Keyword edges toggle
-const kwTog=document.getElementById('kw-toggle');
-kwTog.addEventListener('click',()=>{ st.kwEdges=!st.kwEdges; kwTog.classList.toggle('on',st.kwEdges); applyFilters(); });
-
-// Search
-document.getElementById('search-input').addEventListener('input',function(){ st.query=this.value.trim().toLowerCase(); applyFilters(); });
-
-// Reset zoom
-document.getElementById('btn-reset').addEventListener('click',()=>{
-  svg.transition().duration(550).call(zoom.transform, d3.zoomIdentity.translate(W()/2,H()/2).scale(0.82).translate(-W()/2,-H()/2));
-});
-
-// Pause/Resume
+// pause
 let paused=false;
-document.getElementById('btn-pause').addEventListener('click',function(){
+document.getElementById('btn-ps').addEventListener('click',function(){
   paused=!paused;
-  if(paused){sim.stop();this.textContent='&#9654; Resume';}
-  else{sim.restart();this.textContent='&#9646;&#9646; Pause';}
+  if(paused){sim.stop();this.textContent='▶ Resume';}
+  else{sim.restart();this.textContent='⏸ Pause';}
 });
 
-// Resize
 window.addEventListener('resize',()=>{
-  sim.force('center',d3.forceCenter(W()/2,H()/2))
-     .force('radial',d3.forceRadial(d=>d.id==='this-study'?0:310,W()/2,H()/2).strength(0.07))
-     .alpha(0.1).restart();
+  sim.force('center',d3.forceCenter(W()/2,H()/2)).alpha(0.1).restart();
 });
 
-applyFilters();
+applyVis();
 </script>
 </body>
 </html>
