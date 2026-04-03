@@ -7094,12 +7094,12 @@ svg { width:100%; height:100%; display:block; }
     }
   },
   "this_study_kws": [
+    "デジタルツイン",
     "樹木配置",
+    "CLIP",
     "3D Gaussian Splatting",
     "遺伝的アルゴリズム",
-    "CLIP",
-    "緑視率",
-    "デジタルツイン"
+    "緑視率"
   ],
   "meta": {
     "generated": "2026-04-03",
@@ -7268,16 +7268,29 @@ function rebuildGraph(){
     .attr('stroke-opacity',0.9)
     .attr('filter',d=>`url(#glow-${d.group})`);
 
-  // keyword labels
-  const kwLabelData=activeNodes.filter(d=>d.type==='kw'&&(!d.rare||d.thisStudy));
-  lSel=lG.selectAll('text').data(kwLabelData,d=>d.id).join('text')
+  // labels: all nodes (keywords including rare, + papers)
+  lSel=lG.selectAll('text').data(activeNodes,d=>d.id).join('text')
     .attr('class','nl')
     .attr('text-anchor','middle')
-    .attr('fill',d=>d.thisStudy?'#fbbf24':d.color)
-    .attr('font-size',d=>d.thisStudy?12:d.count>=5?11:9.5)
-    .attr('font-weight',d=>d.thisStudy||d.count>=4?700:400)
-    .attr('opacity',0.95)
-    .text(d=>d.label);
+    .attr('fill',d=>{
+      if(d.type==='paper') return COL[d.group]||COL.MIX;
+      return d.thisStudy?'#fbbf24':d.color;
+    })
+    .attr('font-size',d=>{
+      if(d.type==='paper') return 8;
+      return d.thisStudy?12:d.rare?7.5:d.count>=5?11:9.5;
+    })
+    .attr('font-weight',d=>{
+      if(d.type==='paper') return 400;
+      return d.thisStudy||d.count>=4?700:400;
+    })
+    .attr('opacity',d=>d.type==='paper'?0.72:d.rare?0.65:0.95)
+    .text(d=>{
+      if(d.type==='paper'){
+        const t=d.title; return t.length>22?t.slice(0,20)+'…':t;
+      }
+      return d.label;
+    });
 
   // ── hover / click ──────────────────────────────────────────────────────
   const tt=document.getElementById('tt');
@@ -7348,7 +7361,10 @@ function tick(){
   nSel.attr('transform',d=>`translate(${d.x},${d.y})`);
   lSel.each(function(d){
     const n=nSel.data().find(n=>n.id===d.id);
-    if(n) d3.select(this).attr('transform',`translate(${n.x},${n.y})`).attr('dy',-(kwR(n)+6));
+    if(n){
+      const dy=n.type==='paper'?(paR(n)*0.8+10):-(kwR(n)+6);
+      d3.select(this).attr('transform',`translate(${n.x},${n.y})`).attr('dy',dy);
+    }
   });
 }
 
@@ -7366,7 +7382,7 @@ function hlNode(target, activeNodes){
     if(t===target.id) conn.add(s);
   });
   nSel.attr('opacity',d=>conn.has(d.id)?1:0.08);
-  lSel.attr('opacity',d=>conn.has(d.id)?1:0.04);
+  lSel.attr('opacity',d=>conn.has(d.id)?(d.type==='paper'?0.72:d.rare?0.65:0.95):0.04);
   eSel_pk.attr('stroke-opacity',e=>{
     const s=e.source.id,t=e.target.id;
     return(s===target.id||t===target.id)?0.75:0.03;
@@ -7380,7 +7396,7 @@ function hlNode(target, activeNodes){
 function resetHl(){
   if(!nSel) return;
   nSel.attr('opacity',1);
-  lSel.attr('opacity',0.95);
+  lSel.attr('opacity',d=>d.type==='paper'?0.72:d.rare?0.65:0.95);
   eSel_pk.attr('stroke-opacity',0.28).attr('stroke-width',0.9);
   if(eSel_kk) eSel_kk.attr('stroke-opacity',st.showKK?0.4:0);
 }
