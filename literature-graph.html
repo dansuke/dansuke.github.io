@@ -1,0 +1,3039 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Literature Graph – Tree Placement 3DGS</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg-primary:   #0a0d14;
+  --bg-secondary: #111827;
+  --bg-tertiary:  #1e2535;
+  --bg-card:      #252d40;
+  --border:       #2d3a52;
+  --text-primary: #e2e8f0;
+  --text-sec:     #94a3b8;
+  --text-muted:   #64748b;
+  --accent:       #7c3aed;
+  --accent-l:     #a78bfa;
+  --accent-glow:  rgba(124,58,237,0.3);
+}
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+/* ── Sidebar ── */
+#sidebar {
+  width: 295px; min-width: 295px; height: 100vh;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border);
+  overflow-y: auto; padding: 16px 13px;
+  display: flex; flex-direction: column; gap: 14px;
+  scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+}
+#sidebar::-webkit-scrollbar { width: 4px; }
+#sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.sb-title {
+  font-size: 11px; font-weight: 700; color: var(--accent-l);
+  text-transform: uppercase; letter-spacing: 0.08em;
+  padding-bottom: 5px; border-bottom: 1px solid var(--border);
+}
+#sb-head h1 { font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+#sb-head p  { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
+/* Search */
+#search-wrap { position: relative; }
+#search-input {
+  width: 100%; background: var(--bg-tertiary);
+  border: 1px solid var(--border); border-radius: 7px;
+  color: var(--text-primary); font-size: 12px;
+  padding: 7px 30px 7px 10px; outline: none;
+  transition: border-color 0.2s;
+}
+#search-input::placeholder { color: var(--text-muted); }
+#search-input:focus { border-color: var(--accent); }
+.s-icon { position: absolute; right: 9px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; }
+/* Section buttons */
+.sec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.sec-btn {
+  border: 1px solid var(--border); background: var(--bg-tertiary);
+  border-radius: 5px; padding: 5px 7px; cursor: pointer;
+  font-size: 10.5px; color: var(--text-sec); text-align: left;
+  transition: all 0.15s; line-height: 1.3;
+}
+.sec-btn .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+.sec-btn.active { background: var(--bg-card); color: var(--text-primary); border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent-glow); }
+.sec-btn.inactive { opacity: 0.4; }
+/* Year range */
+.rng-wrap { display: flex; flex-direction: column; gap: 5px; }
+.rng-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); }
+.rng-container { position: relative; height: 18px; }
+.rng-container input[type=range] {
+  position: absolute; width: 100%; height: 4px;
+  -webkit-appearance: none; background: transparent;
+  pointer-events: none; top: 50%; transform: translateY(-50%);
+}
+.rng-container input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 13px; height: 13px; border-radius: 50%;
+  background: var(--accent); cursor: pointer; pointer-events: all;
+  box-shadow: 0 0 0 2px var(--bg-secondary);
+}
+.rng-track { position: absolute; top: 50%; transform: translateY(-50%); height: 4px; width: 100%; background: var(--bg-tertiary); border-radius: 2px; }
+.rng-fill  { position: absolute; top: 50%; transform: translateY(-50%); height: 4px; background: var(--accent); border-radius: 2px; pointer-events: none; }
+/* Relevance filter */
+.rel-row { display: flex; gap: 4px; }
+.rel-btn {
+  flex: 1; padding: 5px 2px; font-size: 11px;
+  background: var(--bg-tertiary); border: 1px solid var(--border);
+  border-radius: 5px; color: var(--text-muted); cursor: pointer;
+  text-align: center; transition: all 0.15s;
+}
+.rel-btn.active { background: var(--bg-card); border-color: var(--accent); color: var(--accent-l); }
+/* Toggle */
+.tog-row { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: var(--text-sec); cursor: pointer; }
+.tog-sw {
+  width: 32px; height: 17px; border-radius: 9px;
+  background: var(--bg-tertiary); border: 1px solid var(--border);
+  position: relative; transition: background 0.2s; cursor: pointer; flex-shrink: 0;
+}
+.tog-sw::after {
+  content: ''; position: absolute; width: 11px; height: 11px;
+  border-radius: 50%; background: var(--text-muted);
+  top: 2px; left: 2px; transition: all 0.2s;
+}
+.tog-sw.on { background: var(--accent); border-color: var(--accent); }
+.tog-sw.on::after { left: 17px; background: white; }
+/* Stats */
+#stats { font-size: 11px; color: var(--text-muted); text-align: center; }
+#stats span { color: var(--accent-l); font-weight: 600; }
+/* Legend */
+.leg-item { display: flex; align-items: center; gap: 7px; font-size: 11px; color: var(--text-sec); padding: 2px 0; }
+.leg-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.leg-cnt { margin-left: auto; color: var(--text-muted); font-size: 10px; }
+/* Buttons */
+.btn-row { display: flex; gap: 5px; }
+.ctrl-btn {
+  flex: 1; padding: 6px 6px; font-size: 11px;
+  background: var(--bg-tertiary); border: 1px solid var(--border);
+  border-radius: 6px; color: var(--text-sec); cursor: pointer; transition: all 0.15s;
+}
+.ctrl-btn:hover { background: var(--bg-card); color: var(--text-primary); border-color: var(--accent); }
+/* ── Graph ── */
+#graph-container { flex: 1; height: 100vh; background: var(--bg-primary); overflow: hidden; }
+#graph-svg { width: 100%; height: 100%; display: block; }
+/* ── Info Panel ── */
+#info-panel {
+  position: fixed; right: 0; top: 0; bottom: 0; width: 355px;
+  background: var(--bg-secondary); border-left: 1px solid var(--border);
+  transform: translateX(100%); transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+  z-index: 50; overflow-y: auto;
+  scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+}
+#info-panel.open { transform: translateX(0); }
+#info-inner { padding: 18px; }
+#close-panel {
+  float: right; background: var(--bg-tertiary); border: 1px solid var(--border);
+  color: var(--text-muted); border-radius: 50%;
+  width: 26px; height: 26px; font-size: 14px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; margin-bottom: 10px;
+}
+#close-panel:hover { color: var(--text-primary); border-color: var(--accent); }
+.i-badge {
+  display: inline-block; font-size: 9.5px; font-weight: 700;
+  padding: 2px 9px; border-radius: 99px; border: 1px solid;
+  margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em;
+}
+.i-title { font-size: 14px; font-weight: 700; line-height: 1.4; margin-bottom: 8px; }
+.i-meta { font-size: 11px; color: var(--text-sec); margin-bottom: 8px; line-height: 1.6; }
+.i-meta .i-jrn { display: block; font-style: italic; }
+.i-meta .i-yr  { font-weight: 600; color: var(--accent-l); }
+.i-stars { font-size: 13px; margin-bottom: 10px; }
+.i-stars .son  { color: #fbbf24; }
+.i-stars .soff { color: var(--text-muted); }
+.i-kws { margin-bottom: 12px; }
+.kw-chip {
+  display: inline-block; background: var(--bg-tertiary);
+  border: 1px solid var(--border); border-radius: 99px;
+  padding: 2px 8px; font-size: 10px; color: var(--text-sec); margin: 2px 2px;
+}
+.i-sec { margin-bottom: 11px; }
+.i-sec h3 { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 4px; }
+.i-sec p  { font-size: 11.5px; line-height: 1.75; color: var(--text-sec); }
+.doi-link {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11.5px; color: var(--accent-l); text-decoration: none;
+  padding: 6px 11px; background: var(--bg-tertiary); border: 1px solid var(--border);
+  border-radius: 6px; transition: all 0.15s; margin-top: 6px;
+}
+.doi-link:hover { background: var(--bg-card); border-color: var(--accent); }
+.doi-none { font-size: 10.5px; color: var(--text-muted); font-style: italic; margin-top: 6px; display: block; }
+/* ── Tooltip ── */
+#tooltip {
+  position: fixed; background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 8px; padding: 9px 12px; font-size: 11.5px;
+  pointer-events: none; max-width: 260px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.6); z-index: 100;
+  line-height: 1.5; display: none;
+}
+#tooltip .tt-sec  { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+#tooltip .tt-ttl  { font-weight: 600; color: var(--text-primary); margin-bottom: 2px; }
+#tooltip .tt-meta { color: var(--text-muted); font-size: 10.5px; margin-bottom: 3px; }
+#tooltip .son { color: #fbbf24; }
+#tooltip .soff{ color: var(--text-muted); }
+.node-label { pointer-events: none; font-family: 'Segoe UI', system-ui, sans-serif; }
+</style>
+</head>
+<body>
+
+<div id="sidebar">
+  <div id="sb-head">
+    <h1>Literature Graph</h1>
+    <p>3DGS × 樹木配置最適化 先行研究マップ</p>
+  </div>
+
+  <div>
+    <div class="sb-title">Search</div>
+    <div id="search-wrap">
+      <input type="text" id="search-input" placeholder="タイトル・著者・キーワード…">
+      <span class="s-icon">&#9906;</span>
+    </div>
+  </div>
+
+  <div>
+    <div class="sb-title" style="margin-bottom:7px">Section</div>
+    <div class="sec-grid" id="section-filters"></div>
+  </div>
+
+  <div>
+    <div class="sb-title" style="margin-bottom:7px">Year Range</div>
+    <div class="rng-wrap">
+      <div class="rng-container">
+        <div class="rng-track"></div>
+        <div class="rng-fill" id="rng-fill"></div>
+        <input type="range" id="year-min" min="1987" max="2026" value="1987">
+        <input type="range" id="year-max" min="1987" max="2026" value="2026">
+      </div>
+      <div class="rng-labels">
+        <span id="yr-min-lbl">1987</span>
+        <span id="yr-max-lbl">2026</span>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="sb-title" style="margin-bottom:7px">Min Relevance</div>
+    <div class="rel-row" id="rel-filters"></div>
+  </div>
+
+  <div>
+    <div class="sb-title" style="margin-bottom:7px">Options</div>
+    <label class="tog-row">
+      <div class="tog-sw" id="kw-toggle"></div>
+      <span>Show keyword edges</span>
+    </label>
+  </div>
+
+  <div id="stats">Showing <span id="vis-count">49</span> / 49 papers</div>
+
+  <div>
+    <div class="sb-title" style="margin-bottom:7px">Legend</div>
+    <div id="legend-secs"></div>
+    <div style="margin-top:9px">
+      <div style="font-size:10px;color:var(--text-muted);margin-bottom:5px">Node Size = Relevance</div>
+      <svg width="130" height="28" overflow="visible">
+        <circle cx="10" cy="22" r="8"  fill="#475569" opacity="0.8"/>
+        <text x="10" y="10" text-anchor="middle" fill="#64748b" font-size="8">★2</text>
+        <circle cx="36" cy="20" r="10" fill="#475569" opacity="0.8"/>
+        <text x="36" y="8"  text-anchor="middle" fill="#64748b" font-size="8">★3</text>
+        <circle cx="66" cy="18" r="12" fill="#475569" opacity="0.8"/>
+        <text x="66" y="4"  text-anchor="middle" fill="#64748b" font-size="8">★4</text>
+        <circle cx="100" cy="16" r="14" fill="#475569" opacity="0.8"/>
+        <text x="100" y="1"  text-anchor="middle" fill="#94a3b8" font-size="8">★5</text>
+      </svg>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="ctrl-btn" id="btn-reset">&#x27F2; Reset View</button>
+    <button class="ctrl-btn" id="btn-pause">&#9646;&#9646; Pause</button>
+  </div>
+</div>
+
+<div id="graph-container">
+  <svg id="graph-svg"></svg>
+</div>
+
+<div id="info-panel">
+  <div id="info-inner">
+    <button id="close-panel">&#x2715;</button>
+    <div id="info-content"></div>
+  </div>
+</div>
+
+<div id="tooltip"></div>
+
+<script id="graph-data" type="application/json">
+{
+  "nodes": [
+    {
+      "id": "this-study",
+      "no": 0,
+      "group": "CENTER",
+      "title": "本研究 / This Study",
+      "author": "Dansuke et al.",
+      "journal": "Environment and Planning B",
+      "year": 2025,
+      "url": null,
+      "keywords": [
+        "3D Gaussian Splatting",
+        "遺伝的アルゴリズム",
+        "緑視率",
+        "CLIP",
+        "樹木配置",
+        "デジタルツイン"
+      ],
+      "summary": "3DGSデジタルツイン上で遺伝的アルゴリズムとCLIP感性評価を用いた樹木配置最適化手法を提案。GVI最大化と個人化された感性評価を統合。",
+      "relationship": "",
+      "relevance": 5
+    },
+    {
+      "id": "paper-1",
+      "no": 1,
+      "group": "A",
+      "title": "視野の広がりと緑量感の関連",
+      "author": "青木陽二",
+      "journal": "造園雑誌, Vol.51, No.1, pp.1-10",
+      "year": 1987,
+      "url": "https://doi.org/10.5632/jila1934.51.1",
+      "keywords": [
+        "緑視率",
+        "視野",
+        "景観評価",
+        "フィールド実験"
+      ],
+      "summary": "緑視率（Green View Index）の概念を提唱した基礎論文。視野内に占める緑の割合が視野の広がりに応じて変化することを実証し、フィールド実験による検証を通じてGVI計算手法を確立した。全ての後続GVI研究の出発点。",
+      "relationship": "GVI研究全般の基礎文献。3DGSレンダリングによるGVI評価の概念的基盤を提供。",
+      "relevance": 5
+    },
+    {
+      "id": "paper-2",
+      "no": 2,
+      "group": "A",
+      "title": "Assessing street-level urban greenery using Google Street View and a modified Green View Index",
+      "author": "Xiaojiang Li, Chuanrong Zhang, Weidong Li, Robert Ricard, Qingyan Meng, Weixing Zhang",
+      "journal": "Urban Forestry & Urban Greening, Vol.14(3), pp.675-685",
+      "year": 2015,
+      "url": "https://doi.org/10.1016/j.ufug.2015.06.006",
+      "keywords": [
+        "Green View Index",
+        "Google Street View",
+        "景観評価",
+        "街路緑化"
+      ],
+      "summary": "GSVの6方向×3垂直角度の18枚画像からGVIを算出する改良手法を提案。マンハッタンでの検証で樹冠被覆率との相関0.96を達成。世界で最も引用されるGVI計算手法。",
+      "relationship": "画像ベースGVI計算の標準手法。3DGSベースのGVIとの比較基準として重要。",
+      "relevance": 4
+    },
+    {
+      "id": "paper-3",
+      "no": 3,
+      "group": "A",
+      "title": "Standardized Green View Index and quantification of different metrics of urban green vegetation",
+      "author": "Yusuke Kumakoshi, Shin Yoshida Chan, Ho Koizumi, Xiaojiang Li, Yoshihide Yoshimura",
+      "journal": "Sustainability, Vol.12(18), 7434",
+      "year": 2020,
+      "url": "https://doi.org/10.3390/su12187434",
+      "keywords": [
+        "Green View Index",
+        "sGVI",
+        "NDVI",
+        "ボロノイ分割",
+        "都市緑化指標"
+      ],
+      "summary": "ボロノイ分割を用いた標準化GVI（sGVI）を提案し、不均一な空間分布のバイアスを軽減。横浜市での検証でsGVIとNDVIを比較し、市街地の歩行者目線緑量をより的確に捉えることを示した。",
+      "relationship": "複数視点GVIの面的集約手法。3DGSレンダリングからの多視点GVI統合に参考。",
+      "relevance": 3
+    },
+    {
+      "id": "paper-4",
+      "no": 4,
+      "group": "A",
+      "title": "View-based greenery: A three-dimensional assessment of city buildings' green visibility using Floor Green View Index",
+      "author": "Shuqing Yu, Bailang Yu, Wei Song, Bin Wu et al.",
+      "journal": "Landscape and Urban Planning, Vol.152, pp.13-26",
+      "year": 2016,
+      "url": "https://doi.org/10.1016/j.landurbplan.2016.04.004",
+      "keywords": [
+        "Floor Green View Index",
+        "3D緑視認性",
+        "都市植生",
+        "建物階別可視領域"
+      ],
+      "summary": "建物各階からの緑視認性を評価するFloor Green View Index（FGVI）を提案。2D GVIの限界を克服し3D多視点評価を実現。北京での適用で階層により緑視認性が大きく異なることを実証。",
+      "relationship": "3D多視点GVI評価の概念を確立。3DGSデジタルツインでの任意視点からの緑視認性評価と直接対応。",
+      "relevance": 5
+    },
+    {
+      "id": "paper-5",
+      "no": 5,
+      "group": "A",
+      "title": "The Green Window View Index (GWVI)",
+      "author": "Anna-Maria Bolte, Benjamin Niedermann, Thomas Kistemann et al.",
+      "journal": "Landscape Ecology, Vol.39, Article 71",
+      "year": 2024,
+      "url": "https://doi.org/10.1007/s10980-024-01871-7",
+      "keywords": [
+        "Green Window View Index",
+        "3D都市モデル",
+        "CityGML",
+        "LiDAR",
+        "OpenGLレンダリング"
+      ],
+      "summary": "窓からの緑の割合（GWVI）をDTM・CityGML LoD2・航空LiDAR・OpenGLレンダリングで算出。窓1視点0.05秒で計算しボン市全域規模の評価を実現。",
+      "relationship": "3D都市モデルによる複数視点緑視認性計算。レンダリングベースのアプローチは3DGSによるGVI計算と並行。",
+      "relevance": 5
+    },
+    {
+      "id": "paper-6",
+      "no": 6,
+      "group": "A",
+      "title": "Assessing the visibility of urban greenery using MLS LiDAR data",
+      "author": "Liyu Tang, Jianguo He, Wei Peng et al.",
+      "journal": "Landscape and Urban Planning, Vol.232, 104662",
+      "year": 2023,
+      "url": "https://doi.org/10.1016/j.landurbplan.2022.104662",
+      "keywords": [
+        "モバイルレーザスキャニング",
+        "3D点群",
+        "緑視率",
+        "仮想カメラ",
+        "PointNet++"
+      ],
+      "summary": "MLS 3D点群からPointNet++とDBSCANで樹木抽出後、仮想カメラを配置してGVIを推定。MLSデータを一度取得すれば任意の位置・高さ・方向からGVI計算可能。",
+      "relationship": "3D点群＋仮想カメラによる多視点GVI。3Dシーン内に仮想カメラを配置する概念は3DGSアプローチと並行。",
+      "relevance": 4
+    },
+    {
+      "id": "paper-7",
+      "no": 7,
+      "group": "A",
+      "title": "Efficient green view index quantification from LiDAR point clouds (PGVI)",
+      "author": "（複数著者）",
+      "journal": "Landscape and Urban Planning, 2026",
+      "year": 2026,
+      "url": "https://doi.org/10.1016/j.landurbplan.2026",
+      "keywords": [
+        "Projected Point GVI",
+        "LiDAR",
+        "円筒射影",
+        "都市規模GVI"
+      ],
+      "summary": "3D点群を円筒射影で2Dパノラマに変換するPGVIを提案。従来手法比約60倍高速化（100万視点10.42秒）。パノラマ写真ベースGVIとのR²=0.86。",
+      "relationship": "最新の効率的3DベースGVI推定。射影アプローチは3DGS内での高速GVI計算に知見を提供。",
+      "relevance": 4
+    },
+    {
+      "id": "paper-8",
+      "no": 8,
+      "group": "A",
+      "title": "Analyzing Green View Index and GVI Best Path using Google Street View and deep learning",
+      "author": "Jiahao Zhang, Anqi Hu",
+      "journal": "J. of Computational Design and Engineering, Vol.9(5), pp.2010-2023",
+      "year": 2022,
+      "url": "https://doi.org/10.1093/jcde/qwac102",
+      "keywords": [
+        "Green View Index",
+        "最適経路",
+        "深層学習",
+        "セマンティックセグメンテーション"
+      ],
+      "summary": "大阪市でGSV画像のセマンティックセグメンテーションによるGVI計算とFloyd-Warshallアルゴリズムを組み合わせたGVI最適経路探索フレームワーク。",
+      "relationship": "GVI計算と最適化アルゴリズムの統合。グラフアルゴリズムだがGVI最適化という点で関連。",
+      "relevance": 4
+    },
+    {
+      "id": "paper-9",
+      "no": 9,
+      "group": "A",
+      "title": "Comprehensive comparative analysis of Green View Index calculation methods",
+      "author": "（複数著者）",
+      "journal": "Land (MDPI), Vol.14(2), 289",
+      "year": 2025,
+      "url": "https://doi.org/10.3390/land14020289",
+      "keywords": [
+        "GVI",
+        "サンプリング手法",
+        "Green View Circle"
+      ],
+      "summary": "6種のGVIサンプリング手法を体系比較。360°全方位1°～10°刻みのGreen View Circle概念を提案。サンプリング手法の選択がGVIに大きく影響することを実証。",
+      "relationship": "3DGSでの多視点評価プロトコル設計に参考。視点サンプリング方法の知見を提供。",
+      "relevance": 3
+    },
+    {
+      "id": "paper-10",
+      "no": 10,
+      "group": "A",
+      "title": "Viewshed-based modelling of visual exposure to urban greenery",
+      "author": "Zofie Cimburova, Stefan Blumentrath",
+      "journal": "Landscape and Urban Planning, Vol.222, 104395",
+      "year": 2022,
+      "url": "https://doi.org/10.1016/j.landurbplan.2022.104395",
+      "keywords": [
+        "可視領域分析",
+        "視覚的露出度",
+        "都市緑化",
+        "GIS",
+        "距離減衰"
+      ],
+      "summary": "GRASS GISによる可視領域解析ベースの都市緑化視覚的露出度モデル。複数パラメータ化関数に対応。オスロでρ=0.96。都市全域評価とシナリオモデリングが可能。",
+      "relationship": "シナリオモデリング機能を持つ多視点視覚的露出度評価。デジタルツインでの植栽配置代替案評価に直接適用可能。",
+      "relevance": 5
+    },
+    {
+      "id": "paper-11",
+      "no": 11,
+      "group": "A",
+      "title": "A new method for efficient GVI quantification using remote sensing (LGVI)",
+      "author": "（複数著者）",
+      "journal": "Urban Forestry & Urban Greening, 2025",
+      "year": 2025,
+      "url": "https://doi.org/10.1016/j.ufug.2025",
+      "keywords": [
+        "Line-based GVI",
+        "リモートセンシング",
+        "3Dシーン再構成"
+      ],
+      "summary": "建物・樹冠高さデータから3Dシーンを構築しラインスキャンでGVIを推定。3D視線法とのRMSE=0.027。オープンアクセスデータでグローバル推定を可能に。",
+      "relationship": "簡易3DシーンによるGVI計算。3DGSベースGVIとの精度トレードオフの理解に参考。",
+      "relevance": 3
+    },
+    {
+      "id": "paper-12",
+      "no": 12,
+      "group": "B",
+      "title": "Study on optimum arrangement of trees using multi-objective genetic algorithm",
+      "author": "Ryozo Ooka, Hong Chen, Shinsuke Kato",
+      "journal": "J. of Wind Engineering and Industrial Aerodynamics, Vol.96, pp.1733-1748",
+      "year": 2008,
+      "url": "https://doi.org/10.1016/j.jweia.2008.02.039",
+      "keywords": [
+        "多目的遺伝的アルゴリズム",
+        "樹木配置",
+        "屋外熱的快適性",
+        "CFD"
+      ],
+      "summary": "多目的GA（MOGA）とCFD（対流・放射・伝導連成）を組み合わせた樹木配置最適化の先駆的研究。GA＋微気候シミュレーションによる植栽配置の最初期論文。",
+      "relationship": "GA樹木配置最適化の基礎論文。GVIベース適応度関数へのGA拡張の妥当性を裏付け。",
+      "relevance": 5
+    },
+    {
+      "id": "paper-13",
+      "no": 13,
+      "group": "B",
+      "title": "Optimization of tree positioning to maximize walking in urban outdoor spaces",
+      "author": "Ivan Estacio, Rafik Hadfi, Ariel Blanco, Takayuki Ito, Justine Babaan",
+      "journal": "Sustainable Cities and Society, Vol.86, 104105",
+      "year": 2022,
+      "url": "https://doi.org/10.1016/j.scs.2022.104105",
+      "keywords": [
+        "樹木配置",
+        "遺伝的アルゴリズム",
+        "エージェントベースモデル",
+        "MRT",
+        "歩行頻度"
+      ],
+      "summary": "GAとABMを組み合わせ歩行頻度を最大化する樹木配置最適化。フィリピンで14m樹間間隔が最適と判明。",
+      "relationship": "GAベース樹木配置最適化。ABM+GAフレームワークは3DGSレンダリング+GA最適化と構造的に類似。",
+      "relevance": 5
+    },
+    {
+      "id": "paper-14",
+      "no": 14,
+      "group": "B",
+      "title": "A multi-objective optimization framework for residential green space considering thermal comfort, daylight and GVI",
+      "author": "Yuxiao Wang, Xiaoyue Yan, Xin Zhang, Di Zhang",
+      "journal": "Sustainable Cities and Society, 2024",
+      "year": 2024,
+      "url": "https://doi.org/10.1016/j.scs.2024.105879",
+      "keywords": [
+        "NSGA-II",
+        "Green View Index",
+        "UTCI",
+        "Tree Shape Surfaces",
+        "多目的最適化"
+      ],
+      "summary": "NSGA-IIでUTCI・sDA・ASE・GVIを同時最適化。北京でGVI26.27%向上。sDAとGVIのトレードオフ（-0.94）を確認。",
+      "relationship": "最も直接的な最適化論文。進化的アルゴリズムでGVIを主要最適化目的に使用。本研究概念に最も近い。",
+      "relevance": 5
+    },
+    {
+      "id": "paper-15",
+      "no": 15,
+      "group": "B",
+      "title": "Climate-sensitive urban planning through optimization of tree placements",
+      "author": "Simon Schrodi, Ferdinand Briegel, Max Argus, Andreas Christen, Thomas Brox",
+      "journal": "ICLR 2024",
+      "year": 2024,
+      "url": "https://arxiv.org/abs/2310.05691",
+      "keywords": [
+        "樹木配置",
+        "NNサロゲート",
+        "ILS",
+        "平均放射温度"
+      ],
+      "summary": "反復局所探索とNNサロゲートモデルによる高速Tmrt推定で樹木配置最適化。フライブルク5地区で検証。",
+      "relationship": "サロゲートモデル＋最適化の樹木配置パラダイム。3DGSを高速レンダリングサロゲートとして使用する手法と方法論的に類似。",
+      "relevance": 5
+    },
+    {
+      "id": "paper-16",
+      "no": 16,
+      "group": "B",
+      "title": "Algorithmic urban greening for thermal resilience: AI-optimised tree placement and species selection",
+      "author": "Abdulrazzaq Shaamala, Tan Yigitcanlar, Alireza Nili, Dan Nyandega",
+      "journal": "Cities, Vol.106356",
+      "year": 2025,
+      "url": "https://doi.org/10.1016/j.cities.2025.106356",
+      "keywords": [
+        "緑のインフラ最適化",
+        "ACO",
+        "樹木計算モデル",
+        "UTCI"
+      ],
+      "summary": "ACOと樹種別熱特性で配置と樹種を同時最適化。ブリビー島で39°C超面積22%削減、最大3.5°C冷却。",
+      "relationship": "異なるメタヒューリスティクス（ACO）による樹木配置。自然着想型最適化の植栽への適用を裏付け。",
+      "relevance": 4
+    },
+    {
+      "id": "paper-17",
+      "no": 17,
+      "group": "B",
+      "title": "Locating trees to mitigate outdoor radiant load — TreePlanter v1.0",
+      "author": "Nils Wallenberg, Fredrik Lindberg, David Rayner",
+      "journal": "Geoscientific Model Development, Vol.15, pp.1107-1128",
+      "year": 2022,
+      "url": "https://doi.org/10.5194/gmd-15-1107-2022",
+      "keywords": [
+        "平均放射温度",
+        "樹木配置最適化",
+        "メタヒューリスティクス",
+        "SOLWEIG"
+      ],
+      "summary": "SOLWEIGのTmrtデータに対する山登り法で樹木最適配置。Tmrt最大26°C低減。UMEPツールに統合。",
+      "relationship": "メタヒューリスティクスによる樹木配置最適化の実用ツール。最適化＋環境シミュレーションのワークフローを実証。",
+      "relevance": 4
+    },
+    {
+      "id": "paper-18",
+      "no": 18,
+      "group": "B",
+      "title": "The influence of changing location of trees on insolation mitigation",
+      "author": "Vesna Stojakovic, Ivana Bajsanski et al.",
+      "journal": "Urban Forestry & Urban Greening, 2020",
+      "year": 2020,
+      "url": "https://doi.org/10.1016/j.ufug.2019.126581",
+      "keywords": [
+        "日射緩和",
+        "進化的アルゴリズム",
+        "Galapagos",
+        "樹木位置"
+      ],
+      "summary": "Grasshopper/RhinoのGalapagos進化ソルバーでベオグラードの日射緩和用樹木位置最適化。約3,000反復で収束。",
+      "relationship": "3Dパラメトリック環境での進化的アルゴリズムによる樹木配置。建築設計ツールでのGA手法の妥当性を裏付け。",
+      "relevance": 4
+    },
+    {
+      "id": "paper-19",
+      "no": 19,
+      "group": "B",
+      "title": "Optimization of tree locations to reduce human heat stress in an urban park",
+      "author": "Tong Hao, Qunshan Zhao, Jiacheng Huang",
+      "journal": "Urban Forestry & Urban Greening, 2023",
+      "year": 2023,
+      "url": "https://doi.org/10.1016/j.ufug.2023.127980",
+      "keywords": [
+        "遺伝的アルゴリズム",
+        "都市公園",
+        "熱ストレス",
+        "樹木配置"
+      ],
+      "summary": "高速シミュレーションとGAで香港公園の樹木最適配置。暑い～涼しい気象条件でフィールド検証。GA最適化がランダム配置を有意に上回る。",
+      "relationship": "GAによる樹木位置最適化の直接的事例。異なる気候条件でのGA有効性を検証。",
+      "relevance": 5
+    },
+    {
+      "id": "paper-20",
+      "no": 20,
+      "group": "B",
+      "title": "Optimizing the shade coverage of trees using GIS and ACO",
+      "author": "M. Ghods et al.",
+      "journal": "Int. J. of Environmental Science and Technology, Vol.20, pp.489-502",
+      "year": 2023,
+      "url": "https://doi.org/10.1007/s13762-022-04537-6",
+      "keywords": [
+        "蟻コロニー最適化",
+        "GIS",
+        "樹木日陰",
+        "3D分析"
+      ],
+      "summary": "ACOと3D GISでファサード日陰最大化×屋上日陰最小化の多目的樹木位置最適化。イランで3D空間の多目的トレードオフを実証。",
+      "relationship": "3D空間分析によるACOメタヒューリスティクス。自然着想型最適化と3D幾何学の統合を裏付け。",
+      "relevance": 4
+    },
+    {
+      "id": "paper-21",
+      "no": 21,
+      "group": "B",
+      "title": "A 3D target-driven optimisation tool for tree planting using temporal crown geometry",
+      "author": "Hadi Yazdi, Xi Chen, Thomas Rötzer et al.",
+      "journal": "npj Urban Sustainability, Vol.6, Article 44",
+      "year": 2026,
+      "url": "https://doi.org/10.1038/s42949-026-00350-z",
+      "keywords": [
+        "樹木配置最適化",
+        "3D樹冠形状",
+        "時間的発達"
+      ],
+      "summary": "複雑な3D樹冠形状と成長ダイナミクスを組み込んだTreeML-Planter。全先行樹木配置最適化手法の包括的レビューを含む。",
+      "relationship": "3D樹木モデリングの配置最適化と分野の網羅的レビュー。手法参照およびサーベイとして有用。",
+      "relevance": 4
+    },
+    {
+      "id": "paper-22",
+      "no": 22,
+      "group": "B",
+      "title": "Integrating GIS, 3D-Isovist, and NSGA-II for landscape design automation in urban parks",
+      "author": "（イラン科学技術大学）",
+      "journal": "Information Processing in Agriculture, Vol.13(1), pp.1-16",
+      "year": 2024,
+      "url": "https://www.sciencedirect.com/science/article/pii/S2577444124000595",
+      "keywords": [
+        "NSGA-II",
+        "3D Isovist",
+        "GIS",
+        "都市公園設計",
+        "パレートフロンティア"
+      ],
+      "summary": "GIS・3D Isovist・NSGA-IIでテヘラン公園の樹木配置最適化（185本、66視点）。Tree ViewとBuilding Viewで各18%・12%以上改善。",
+      "relationship": "3D可視性分析と進化的樹木配置最適化を視覚的品質目的で統合。多視点GVI最適化と密接に並行。",
+      "relevance": 5
+    },
+    {
+      "id": "paper-23",
+      "no": 23,
+      "group": "B",
+      "title": "Optimal planning of urban greening system using genetic algorithm (Tianjin)",
+      "author": "（複数著者）",
+      "journal": "Sustainable Cities and Society, 2022",
+      "year": 2022,
+      "url": "https://doi.org/10.1016/j.scs.2022.104285",
+      "keywords": [
+        "遺伝的アルゴリズム",
+        "都市緑地",
+        "空間最適化",
+        "地表面温度"
+      ],
+      "summary": "GAで天津市中心部の都市緑地空間パターン最適化。総LST2,799.82°C低減。GAの適応性とスケーラビリティを実証。",
+      "relationship": "都市規模の緑化空間最適化にGAを適用。スケーラビリティを実証。",
+      "relevance": 3
+    },
+    {
+      "id": "paper-24",
+      "no": 24,
+      "group": "B",
+      "title": "A workflow for climate-adaptive tree planting design through evolutionary algorithm",
+      "author": "（複数著者）",
+      "journal": "Landscape Ecology (Springer)",
+      "year": 2026,
+      "url": "https://doi.org/10.1007/s10980-026-02324-z",
+      "keywords": [
+        "NSGA-II",
+        "LAI",
+        "MRT",
+        "UTCI",
+        "Grasshopper",
+        "Ladybug Tools"
+      ],
+      "summary": "Grasshopper＋Ladybug ToolsとNSGA-IIによるジェネラティブ植栽設計。熱快適性と樹木コストの季節間トレードオフを探索。MRT予測精度約3°C改善。",
+      "relationship": "検証済み熱シミュレーションとの多目的進化的樹木配置最適化。季節的設計トレードオフを実証。",
+      "relevance": 3
+    },
+    {
+      "id": "paper-25",
+      "no": 25,
+      "group": "B",
+      "title": "Maximizing the pedestrian radiative cooling benefit per street tree",
+      "author": "Jacob A. Lachapelle et al.",
+      "journal": "Landscape and Urban Planning, Vol.230, 104608",
+      "year": 2023,
+      "url": "https://doi.org/10.1016/j.landurbplan.2022.104608",
+      "keywords": [
+        "街路樹",
+        "Tmrt",
+        "歩行者熱的快適性"
+      ],
+      "summary": "5地点×4街路方位で190シミュレーション。既存樹木のない街路への植樹が1.5～2倍の放射冷却効果。均等配置が1本あたり冷却効果を最大化。",
+      "relationship": "樹木配置最適化のヒューリスティック制約定義に不可欠な実証的知見。",
+      "relevance": 3
+    },
+    {
+      "id": "paper-26",
+      "no": 26,
+      "group": "C",
+      "title": "Multi-temporal analysis of urban vegetation using deep learning and 3D reconstruction (S3PVI)",
+      "author": "Anqi Hu, Nobuyoshi Yabuki, Tomohiro Fukuda",
+      "journal": "Landscape Ecology, Vol.40, Article 125",
+      "year": 2025,
+      "url": "https://doi.org/10.1007/s10980-025-02090-4",
+      "keywords": [
+        "S3PVI",
+        "3D Gaussian Splatting",
+        "深層学習",
+        "都市植生",
+        "季節動態"
+      ],
+      "summary": "SfM・3DGS・EfficientNet・DANetを統合したS3PVIを提案。吹田市で桜は春45.61%、紅葉は秋56.78%の視認率。仮想公園シミュレーションで多樹種の通年安定性を確認。",
+      "relationship": "最も直接的に関連する論文。3DGSによるシーン再構築と植生視認性指標化の先行研究。GA最適化が本研究の追加要素。",
+      "relevance": 5
+    },
+    {
+      "id": "paper-27",
+      "no": 27,
+      "group": "C",
+      "title": "A perception-powered urban digital twin to support human-centered urban planning",
+      "author": "Lei B., Janssen P. et al.",
+      "journal": "Cities (Elsevier), 2024",
+      "year": 2024,
+      "url": "https://doi.org/10.1016/j.cities.2024.105358",
+      "keywords": [
+        "都市デジタルツイン",
+        "緑視率",
+        "視覚的知覚",
+        "シンガポール"
+      ],
+      "summary": "シンガポール3kmグリーンウェイのUDTプラットフォーム。3Dモデルとパノラマ画像を統合し緑視率を算出。写実的シナリオシミュレーションで施工前の知覚予測を実現。",
+      "relationship": "3Dモデルベース緑視率評価とシナリオシミュレーションを統合したUDT。最適化に不可欠な「what-if」能力を実証。",
+      "relevance": 5
+    },
+    {
+      "id": "paper-28",
+      "no": 28,
+      "group": "C",
+      "title": "Neural Radiance Fields for landscape architecture",
+      "author": "Maximilian Schob, Jörg Rekittke",
+      "journal": "J. of Digital Landscape Architecture, 8-2023, pp.428-442",
+      "year": 2023,
+      "url": "https://doi.org/10.14627/537740046",
+      "keywords": [
+        "NeRF",
+        "ランドスケープアーキテクチャ",
+        "Instant-NGP",
+        "ドローン"
+      ],
+      "summary": "Instant-NGPでドローン・地上画像からの景観シーン再構成。ドイツ・アール川谷で検証。植生レンダリングがSfM/MVSより優れることを実証。NeRFは3DGSの前身技術。",
+      "relationship": "NeRFとランドスケープアーキテクチャの接続。3DGSの前身として応用領域の妥当性を裏付け。",
+      "relevance": 4
+    },
+    {
+      "id": "paper-29",
+      "no": 29,
+      "group": "C",
+      "title": "A novel framework utilizing 3DGS to construct building geometry for urban wind simulations",
+      "author": "（複数著者）",
+      "journal": "Sustainable Cities and Society, 2025",
+      "year": 2025,
+      "url": "https://doi.org/10.1016/j.scs.2025.106143",
+      "keywords": [
+        "3D Gaussian Splatting",
+        "CFD",
+        "都市微気候",
+        "植生点群"
+      ],
+      "summary": "3DGSで都市CFD用建物・植生ジオメトリ構築。改良VDVIで植生点群抽出。メルボルンCBDでハウスドルフ距離0.66m。モデル準備を数日→数時間に短縮。",
+      "relationship": "3DGSの都市植生抽出と環境シミュレーションへの直接適用を実証。",
+      "relevance": 4
+    },
+    {
+      "id": "paper-30",
+      "no": 30,
+      "group": "C",
+      "title": "ForestSplat: Scalable forestry mapping using 3D Gaussian Splatting",
+      "author": "（ForestSplatチーム）",
+      "journal": "Remote Sensing (MDPI), Vol.17(6), 993",
+      "year": 2025,
+      "url": "https://doi.org/10.3390/rs17060993",
+      "keywords": [
+        "3D Gaussian Splatting",
+        "林業",
+        "樹冠高マップ",
+        "ドローン"
+      ],
+      "summary": "SfM・MVS・3DGSでドローン画像から樹冠高マップ生成。200エーカーで航空LiDAR比MAE0.17mを100分の1コストで達成。",
+      "relationship": "3DGSの植生・樹木モデリングへの直接適用。複雑な植生ジオメトリ処理能力を検証。",
+      "relevance": 4
+    },
+    {
+      "id": "paper-31",
+      "no": 31,
+      "group": "C",
+      "title": "HUGS: Holistic Urban 3D Scene Understanding via Gaussian Splatting",
+      "author": "Hongyu Zhou et al.",
+      "journal": "CVPR 2024",
+      "year": 2024,
+      "url": null,
+      "keywords": [
+        "3D Gaussian Splatting",
+        "都市シーン理解",
+        "セマンティック再構成"
+      ],
+      "summary": "静的・動的3Dガウシアンでジオメトリ・外観・セマンティクス・動きを同時最適化。RGB・セマンティックマップ・オプティカルフローの同時レンダリングを実現。",
+      "relationship": "3DGSのセマンティック都市シーン理解への拡張。セマンティック対応GVI計算に関連。",
+      "relevance": 3
+    },
+    {
+      "id": "paper-32",
+      "no": 32,
+      "group": "C",
+      "title": "Green Urban Scenarios: Digital twin for urban forests",
+      "author": "Bulent Ozel, Marko Petrovic",
+      "journal": "Arboriculture & Urban Forestry, Vol.50(1), pp.109-130",
+      "year": 2024,
+      "url": "https://doi.org/10.48044/jauf.2023.029",
+      "keywords": [
+        "エージェントベースモデル",
+        "デジタルツイン",
+        "都市林"
+      ],
+      "summary": "個体木粒度のABMによる都市林デジタルツイン（GUS）。各樹木に固有IDと座標。炭素隔離・水保持・成長予測。グラスゴーに適用。",
+      "relationship": "個別樹木シミュレーションのABMデジタルツイン。GA最適化と補完的。",
+      "relevance": 3
+    },
+    {
+      "id": "paper-33",
+      "no": 33,
+      "group": "C",
+      "title": "Digital twin for urban planning in the Green Deal era",
+      "author": "Morello E., Piga B.E.A. et al.",
+      "journal": "Sustainability (MDPI), Vol.14(10), 6263",
+      "year": 2022,
+      "url": "https://doi.org/10.3390/su14106263",
+      "keywords": [
+        "デジタルツイン",
+        "スマートシティ",
+        "都市計画",
+        "植生"
+      ],
+      "summary": "Virtual Singapore含む6DTプロジェクトのレビュー。ほぼ全DTが植生のデジタル化に欠けることを指摘。植生モデリングを重大ギャップとして特定。",
+      "relationship": "植生対応都市DTの研究ギャップを確立。3DGSベース緑化DTの必要性の文脈を提供。",
+      "relevance": 4
+    },
+    {
+      "id": "paper-34",
+      "no": 34,
+      "group": "C",
+      "title": "NeRF-RE: Improved Neural Radiance Field for urban garden reconstruction",
+      "author": "（複数著者）",
+      "journal": "Information (MDPI), Vol.16(8), 654",
+      "year": 2025,
+      "url": "https://doi.org/10.3390/info16080654",
+      "keywords": [
+        "NeRF",
+        "都市庭園設計",
+        "3D再構成",
+        "VR"
+      ],
+      "summary": "中国国立植物園のリンゴ樹の高忠実度3D再構成。Mip-NeRF 360比21倍速。NeRFが都市庭園の仮想体験に活用可能であることを実証。",
+      "relationship": "NeRFの都市庭園/樹木再構成への特化適用。3DGSと補完的なニューラルレンダリング手法。",
+      "relevance": 3
+    },
+    {
+      "id": "paper-35",
+      "no": 35,
+      "group": "D",
+      "title": "Assessment of visual landscape quality of urban green spaces using image-based metrics",
+      "author": "（Zhang et al.）",
+      "journal": "Urban Forestry & Urban Greening, 2023",
+      "year": 2023,
+      "url": null,
+      "keywords": [
+        "視覚的景観品質",
+        "知覚的感覚次元",
+        "パノラマ画像",
+        "GVI"
+      ],
+      "summary": "知覚的感覚次元に基づくVLQの画像ベース指標。パノラマ6分割、1,500人アンケート。自然性・GVI・樹木視認性で相関0.5以上。GLMM＋RF予測モデル。",
+      "relationship": "多視点パノラマ視覚品質評価。3DGSでのレンダリング視点からのGVI評価と密接に並行。",
+      "relevance": 4
+    },
+    {
+      "id": "paper-36",
+      "no": 36,
+      "group": "E",
+      "title": "熱放射環境と景観の両面に配慮した都市オープンスペースにおける樹木配置の多目的最適化",
+      "author": "（日本建築学会技術報告集掲載）",
+      "journal": "日本建築学会技術報告集, Vol.28, No.68, p.320-",
+      "year": 2022,
+      "url": "https://www.jstage.jst.go.jp/article/aijt/28/68/28_320/_article/-char/ja/",
+      "keywords": [
+        "多目的最適化",
+        "樹木配置",
+        "熱放射環境",
+        "緑視率",
+        "天空率",
+        "パレート解"
+      ],
+      "summary": "都市オープンスペースでの樹木配置多目的最適化。MRT・緑視率・天空率のトレードオフを考慮したパレート解。同一本数でも配置で3指標が大きく変化。",
+      "relationship": "最も近い日本語論文。樹木配置最適化とGVI評価を多目的フレームワークで直接統合。",
+      "relevance": 5
+    },
+    {
+      "id": "paper-37",
+      "no": 37,
+      "group": "E",
+      "title": "暑熱適応策とHI緩和策からみたオープンスペースにおける樹木配置の最適化と影響評価",
+      "author": "（日本建築学会環境系論文集掲載）",
+      "journal": "日本建築学会環境系論文集, Vol.85, No.772, p.475-",
+      "year": 2020,
+      "url": "https://www.jstage.jst.go.jp/article/aije/85/772/85_475/_pdf/-char/ja",
+      "keywords": [
+        "暑熱適応",
+        "ヒートアイランド",
+        "樹木配置",
+        "最適化",
+        "MRT",
+        "CFD"
+      ],
+      "summary": "暑熱適応とUHI緩和のための樹木配置最適化。SET*よりMRTが最適化に適切と論証。No.36の多目的アプローチの基礎論文。",
+      "relationship": "本研究が視覚的（GVI）最適化に拡張する熱快適性最適化の基礎を提供。",
+      "relevance": 4
+    },
+    {
+      "id": "paper-38",
+      "no": 38,
+      "group": "E",
+      "title": "CGモデルによる全方位緑視率の計量手法とその応用可能性",
+      "author": "藤井健史, 山田悟史, 廣瀬徳郎, 及川清昭",
+      "journal": "日本建築学会技術報告集, Vol.19, No.43, pp.1067-1072",
+      "year": 2013,
+      "url": "https://doi.org/10.3130/aijt.19.1067",
+      "keywords": [
+        "緑視率",
+        "全方位視野",
+        "立体角",
+        "植栽計画シミュレーション"
+      ],
+      "summary": "CGモデルで全方位視野の緑の立体角比率を定量評価。立命館大学キャンパスで樹木種・樹冠形状を評価。複数植栽設計案のシミュレーションで緑視認性最大化を検証。",
+      "relationship": "核心的日本語先行研究。3D CGモデル＋全方位GVI＋植栽シミュレーション。3DGSベースGVI評価が現代化・拡張する基礎方法論。",
+      "relevance": 5
+    },
+    {
+      "id": "paper-39",
+      "no": 39,
+      "group": "E",
+      "title": "全方位緑視率を用いた緑地環境に対する印象評価推定モデル作成と検証",
+      "author": "山田悟史, 藤井健史, 宗本晋作",
+      "journal": "日本建築学会計画系論文集, Vol.81, No.727, pp.2083-2093",
+      "year": 2016,
+      "url": "https://doi.org/10.3130/aija.81.2083",
+      "keywords": [
+        "緑視率",
+        "全方位視認率",
+        "自己組織化マップ",
+        "感性評価予測"
+      ],
+      "summary": "No.38を発展させ全方位GVIとSOMで印象評価推定モデルを構築。計算的GVIと人間知覚評価を結び付け京都市の緑のマスタープランに適用。計算的GVIが景観印象を予測可能であることを実証。",
+      "relationship": "計算的GVI指標が人間知覚の有意な代理変数となることを検証。GVIをGA適応度関数として使用する根拠を支持。",
+      "relevance": 4
+    },
+    {
+      "id": "paper-40",
+      "no": 40,
+      "group": "E",
+      "title": "樹木配置条件による緑視率期待値の図化および数式化——GPGPUモンテカルロシミュレーション",
+      "author": "（日本建築学会計画系論文集掲載）",
+      "journal": "日本建築学会計画系論文集",
+      "year": 2020,
+      "url": "https://www.researchgate.net/publication/343022176",
+      "keywords": [
+        "緑視率",
+        "樹木配置",
+        "モンテカルロシミュレーション",
+        "GPGPU",
+        "CGモデル"
+      ],
+      "summary": "12樹形×8緑被率で28,800のランダム配置モデルを生成。GPGPUモンテカルロで各条件の期待GVIを算出。計画チャートと推定式として表現。",
+      "relationship": "樹木配置とGVI計算のシミュレーション統合。モンテカルロ使用だが3DGS＋GA手法に最も類似する日本語文献。",
+      "relevance": 5
+    },
+    {
+      "id": "paper-41",
+      "no": 41,
+      "group": "E",
+      "title": "都市空間の緑景観評価のための立体緑視率の研究",
+      "author": "（写真測量とリモートセンシング掲載）",
+      "journal": "写真測量とリモートセンシング, Vol.54, No.1, p.32-",
+      "year": 2015,
+      "url": "https://www.jstage.jst.go.jp/article/jsprs/54/1/54_32/_pdf",
+      "keywords": [
+        "立体緑視率",
+        "都市空間",
+        "3次元",
+        "緑景観評価"
+      ],
+      "summary": "都市空間の緑景観評価のための立体緑視率（3D GVI）を提案。写真測量技術でGVIを三次元的評価に拡張。",
+      "relationship": "GVIの3D評価への拡張概念。3DGSベースの多視点GVIと直接並行。",
+      "relevance": 4
+    },
+    {
+      "id": "paper-42",
+      "no": 42,
+      "group": "E",
+      "title": "風速低減を目的とした樹木の最適配置——随伴変数法CFD逆解析",
+      "author": "眞下茜, 河野良坪, 中川純, 桃瀬一成, 池島薫, 乾久美子",
+      "journal": "日本建築学会環境系論文集, Vol.80, No.715, p.803-",
+      "year": 2015,
+      "url": "https://www.jstage.jst.go.jp/article/aije/80/715/80_803/_article/-char/ja/",
+      "keywords": [
+        "最適化",
+        "随伴変数法",
+        "CFD",
+        "風速低減",
+        "樹木配置"
+      ],
+      "summary": "CFD逆解析の随伴変数法で風速低減のための樹木最適配置。計算的最適化が建築・都市設計の樹木配置に適用可能であることを実証。",
+      "relationship": "別の最適化パラダイム（随伴法）による樹木配置最適化。GAアプローチのアルゴリズム的先行事例。",
+      "relevance": 3
+    },
+    {
+      "id": "paper-43",
+      "no": 43,
+      "group": "E",
+      "title": "都市の街路樹景観における緑の量と質が歩行者に与える快適性に関する研究",
+      "author": "（都市計画論文集掲載）",
+      "journal": "都市計画論文集, Vol.58, No.3, p.774-",
+      "year": 2023,
+      "url": "https://www.jstage.jst.go.jp/article/journalcpij/58/3/58_774/_article/-char/ja/",
+      "keywords": [
+        "街路樹",
+        "緑視率",
+        "植栽デザイン",
+        "歩行者快適性"
+      ],
+      "summary": "GVI水準と植栽デザインが歩行者快適性に与える影響。落葉樹＋25%GVIが最快適。屋外志向者は高GVI選好、高齢者は低GVIに敏感。",
+      "relationship": "最適化の目標GVI範囲を確立。25%閾値はGA最適化の適応度基準として有用。",
+      "relevance": 3
+    },
+    {
+      "id": "paper-44",
+      "no": 44,
+      "group": "E",
+      "title": "視点場移動型VRを用いた街路樹の景観と樹木間隔の評価",
+      "author": "川口将武, 加我宏之, 赤澤宏樹",
+      "journal": "ランドスケープ研究, Vol.87, No.5, pp.477-480",
+      "year": 2024,
+      "url": "https://doi.org/10.5632/jila.87.477",
+      "keywords": [
+        "街路樹",
+        "景観評価",
+        "樹木間隔",
+        "VR"
+      ],
+      "summary": "視点場移動型VRで街路樹景観と樹木間隔を評価。歩行者視点からの樹木配置のVRベース評価。",
+      "relationship": "歩行者視点からの樹木配置のVR評価。3DGSベースの没入型GVI評価と並行。",
+      "relevance": 3
+    },
+    {
+      "id": "paper-45",
+      "no": 45,
+      "group": "E",
+      "title": "緑視率と植栽形態が路地景観の印象に及ぼす影響",
+      "author": "（都市計画報告集掲載）",
+      "journal": "都市計画報告集, Vol.16, No.4, p.387-",
+      "year": 2018,
+      "url": "https://www.jstage.jst.go.jp/article/reportscpij/16/4/16_387/_article/-char/ja/",
+      "keywords": [
+        "緑視率",
+        "植栽形態",
+        "路地景観",
+        "SD法",
+        "密集市街地"
+      ],
+      "summary": "密集市街地の路地景観でGVIと植栽形態の影響をSD法で検討。GVIと花・実の特徴が景観評価の重要因子。",
+      "relationship": "制約された都市空間でのGVI影響の文脈を提供。",
+      "relevance": 2
+    },
+    {
+      "id": "paper-46",
+      "no": 46,
+      "group": "E",
+      "title": "視野角度別緑視率による緑化景観評価の予測方法の提案",
+      "author": "（環境情報科学論文集掲載）",
+      "journal": "環境情報科学論文集, Vol.23, p.367-",
+      "year": 2009,
+      "url": "https://www.jstage.jst.go.jp/article/ceispapers/ceis23/0/ceis23_0_367/_pdf/-char/ja",
+      "keywords": [
+        "視野角度別緑視率",
+        "緑化景観評価"
+      ],
+      "summary": "視野角度別にGVIを分解する手法を提案。方向別GVIパターンの理解に重要。3DGS多視点GVI評価に直接関連。",
+      "relationship": "多角度GVIサンプリング戦略に知見を提供。",
+      "relevance": 3
+    },
+    {
+      "id": "paper-47",
+      "no": 47,
+      "group": "E",
+      "title": "都市環境における視野内の空と植栽の比率が住居地域の景観選好に及ぼす影響",
+      "author": "（都市計画報告集掲載）",
+      "journal": "都市計画報告集, Vol.19, No.4, p.465-",
+      "year": 2021,
+      "url": "https://www.jstage.jst.go.jp/article/reportscpij/19/4/19_465/_article/-char/ja/",
+      "keywords": [
+        "緑視率",
+        "空率",
+        "景観選好",
+        "コンジョイント分析"
+      ],
+      "summary": "空率とGVIの相互作用が景観選好に与える影響。空率低い場合にGVIの影響が増大。空の見えにくいエリアでの緑化優先を示唆。",
+      "relationship": "GA最適化での空間的優先順位定義に有用な実証的根拠。",
+      "relevance": 3
+    },
+    {
+      "id": "paper-48",
+      "no": 48,
+      "group": "E",
+      "title": "Googleストリートビューのパノラマ画像を用いた広域・網羅的な地域景観分析",
+      "author": "（土木学会論文集掲載）",
+      "journal": "土木学会論文集D3, Vol.72, No.5, p.I_383-",
+      "year": 2016,
+      "url": "https://www.jstage.jst.go.jp/article/jscejipm/72/5/72_I_383/_article/-char/ja/",
+      "keywords": [
+        "Google Street View",
+        "パノラマ画像",
+        "景観分析",
+        "緑の占有率"
+      ],
+      "summary": "GSVパノラマ画像100m間隔で広域景観分析。フラクタル次元・空率・緑占有率を分析し5クラスターに分類。",
+      "relationship": "都市規模の画像ベースGVI評価。3DGSアプローチとの比較基準。",
+      "relevance": 2
+    },
+    {
+      "id": "paper-49",
+      "no": 49,
+      "group": "E",
+      "title": "植物成長シミュレーションによる緑地設計・環境評価ツールの開発",
+      "author": "（ランドスケープ研究掲載）",
+      "journal": "ランドスケープ研究, Vol.70, No.5, p.539-",
+      "year": 2007,
+      "url": "https://www.jstage.jst.go.jp/article/jila/70/5/70_5_539/_article/-char/ja/",
+      "keywords": [
+        "造園設計",
+        "植物成長モデル",
+        "AMAP",
+        "3D-CAD"
+      ],
+      "summary": "VectorWorks 3D-CADと植物成長モデルAMAPを組み合わせた緑地設計ツール。3D設計シミュレーションと環境評価の統合。",
+      "relationship": "初期の3Dシミュレーション＋環境評価の植生設計統合。3DGSデジタルツインの概念的祖先。",
+      "relevance": 2
+    }
+  ],
+  "edges": [
+    {
+      "source": "paper-1",
+      "target": "this-study",
+      "type": "main",
+      "weight": 5,
+      "shared": []
+    },
+    {
+      "source": "paper-2",
+      "target": "this-study",
+      "type": "main",
+      "weight": 4,
+      "shared": []
+    },
+    {
+      "source": "paper-3",
+      "target": "this-study",
+      "type": "main",
+      "weight": 3,
+      "shared": []
+    },
+    {
+      "source": "paper-4",
+      "target": "this-study",
+      "type": "main",
+      "weight": 5,
+      "shared": []
+    },
+    {
+      "source": "paper-5",
+      "target": "this-study",
+      "type": "main",
+      "weight": 5,
+      "shared": []
+    },
+    {
+      "source": "paper-6",
+      "target": "this-study",
+      "type": "main",
+      "weight": 4,
+      "shared": []
+    },
+    {
+      "source": "paper-7",
+      "target": "this-study",
+      "type": "main",
+      "weight": 4,
+      "shared": []
+    },
+    {
+      "source": "paper-8",
+      "target": "this-study",
+      "type": "main",
+      "weight": 4,
+      "shared": []
+    },
+    {
+      "source": "paper-9",
+      "target": "this-study",
+      "type": "main",
+      "weight": 3,
+      "shared": []
+    },
+    {
+      "source": "paper-10",
+      "target": "this-study",
+      "type": "main",
+      "weight": 5,
+      "shared": []
+    },
+    {
+      "source": "paper-11",
+      "target": "this-study",
+      "type": "main",
+      "weight": 3,
+      "shared": []
+    },
+    {
+      "source": "paper-12",
+      "target": "this-study",
+      "type": "main",
+      "weight": 5,
+      "shared": []
+    },
+    {
+      "source": "paper-13",
+      "target": "this-study",
+      "type": "main",
+      "weight": 5,
+      "shared": []
+    },
+    {
+      "source": "paper-14",
+      "target": "this-study",
+      "type": "main",
+      "weight": 5,
+      "shared": []
+    },
+    {
+      "source": "paper-15",
+      "target": "this-study",
+      "type": "main",
+      "weight": 5,
+      "shared": []
+    },
+    {
+      "source": "paper-16",
+      "target": "this-study",
+      "type": "main",
+      "weight": 4,
+      "shared": []
+    },
+    {
+      "source": "paper-17",
+      "target": "this-study",
+      "type": "main",
+      "weight": 4,
+      "shared": []
+    },
+    {
+      "source": "paper-18",
+      "target": "this-study",
+      "type": "main",
+      "weight": 4,
+      "shared": []
+    },
+    {
+      "source": "paper-19",
+      "target": "this-study",
+      "type": "main",
+      "weight": 5,
+      "shared": []
+    },
+    {
+      "source": "paper-20",
+      "target": "this-study",
+      "type": "main",
+      "weight": 4,
+      "shared": []
+    },
+    {
+      "source": "paper-21",
+      "target": "this-study",
+      "type": "main",
+      "weight": 4,
+      "shared": []
+    },
+    {
+      "source": "paper-22",
+      "target": "this-study",
+      "type": "main",
+      "weight": 5,
+      "shared": []
+    },
+    {
+      "source": "paper-23",
+      "target": "this-study",
+      "type": "main",
+      "weight": 3,
+      "shared": []
+    },
+    {
+      "source": "paper-24",
+      "target": "this-study",
+      "type": "main",
+      "weight": 3,
+      "shared": []
+    },
+    {
+      "source": "paper-25",
+      "target": "this-study",
+      "type": "main",
+      "weight": 3,
+      "shared": []
+    },
+    {
+      "source": "paper-26",
+      "target": "this-study",
+      "type": "main",
+      "weight": 5,
+      "shared": []
+    },
+    {
+      "source": "paper-27",
+      "target": "this-study",
+      "type": "main",
+      "weight": 5,
+      "shared": []
+    },
+    {
+      "source": "paper-28",
+      "target": "this-study",
+      "type": "main",
+      "weight": 4,
+      "shared": []
+    },
+    {
+      "source": "paper-29",
+      "target": "this-study",
+      "type": "main",
+      "weight": 4,
+      "shared": []
+    },
+    {
+      "source": "paper-30",
+      "target": "this-study",
+      "type": "main",
+      "weight": 4,
+      "shared": []
+    },
+    {
+      "source": "paper-31",
+      "target": "this-study",
+      "type": "main",
+      "weight": 3,
+      "shared": []
+    },
+    {
+      "source": "paper-32",
+      "target": "this-study",
+      "type": "main",
+      "weight": 3,
+      "shared": []
+    },
+    {
+      "source": "paper-33",
+      "target": "this-study",
+      "type": "main",
+      "weight": 4,
+      "shared": []
+    },
+    {
+      "source": "paper-34",
+      "target": "this-study",
+      "type": "main",
+      "weight": 3,
+      "shared": []
+    },
+    {
+      "source": "paper-35",
+      "target": "this-study",
+      "type": "main",
+      "weight": 4,
+      "shared": []
+    },
+    {
+      "source": "paper-36",
+      "target": "this-study",
+      "type": "main",
+      "weight": 5,
+      "shared": []
+    },
+    {
+      "source": "paper-37",
+      "target": "this-study",
+      "type": "main",
+      "weight": 4,
+      "shared": []
+    },
+    {
+      "source": "paper-38",
+      "target": "this-study",
+      "type": "main",
+      "weight": 5,
+      "shared": []
+    },
+    {
+      "source": "paper-39",
+      "target": "this-study",
+      "type": "main",
+      "weight": 4,
+      "shared": []
+    },
+    {
+      "source": "paper-40",
+      "target": "this-study",
+      "type": "main",
+      "weight": 5,
+      "shared": []
+    },
+    {
+      "source": "paper-41",
+      "target": "this-study",
+      "type": "main",
+      "weight": 4,
+      "shared": []
+    },
+    {
+      "source": "paper-42",
+      "target": "this-study",
+      "type": "main",
+      "weight": 3,
+      "shared": []
+    },
+    {
+      "source": "paper-43",
+      "target": "this-study",
+      "type": "main",
+      "weight": 3,
+      "shared": []
+    },
+    {
+      "source": "paper-44",
+      "target": "this-study",
+      "type": "main",
+      "weight": 3,
+      "shared": []
+    },
+    {
+      "source": "paper-45",
+      "target": "this-study",
+      "type": "main",
+      "weight": 2,
+      "shared": []
+    },
+    {
+      "source": "paper-46",
+      "target": "this-study",
+      "type": "main",
+      "weight": 3,
+      "shared": []
+    },
+    {
+      "source": "paper-47",
+      "target": "this-study",
+      "type": "main",
+      "weight": 3,
+      "shared": []
+    },
+    {
+      "source": "paper-48",
+      "target": "this-study",
+      "type": "main",
+      "weight": 2,
+      "shared": []
+    },
+    {
+      "source": "paper-49",
+      "target": "this-study",
+      "type": "main",
+      "weight": 2,
+      "shared": []
+    },
+    {
+      "source": "paper-1",
+      "target": "paper-2",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "景観評価"
+      ]
+    },
+    {
+      "source": "paper-1",
+      "target": "paper-6",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-1",
+      "target": "paper-27",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-1",
+      "target": "paper-36",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-1",
+      "target": "paper-38",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-1",
+      "target": "paper-39",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-1",
+      "target": "paper-40",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-1",
+      "target": "paper-43",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-1",
+      "target": "paper-44",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "景観評価"
+      ]
+    },
+    {
+      "source": "paper-1",
+      "target": "paper-45",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-1",
+      "target": "paper-47",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-2",
+      "target": "paper-3",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "Green View Index"
+      ]
+    },
+    {
+      "source": "paper-2",
+      "target": "paper-8",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "Green View Index"
+      ]
+    },
+    {
+      "source": "paper-2",
+      "target": "paper-14",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "Green View Index"
+      ]
+    },
+    {
+      "source": "paper-2",
+      "target": "paper-44",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "景観評価"
+      ]
+    },
+    {
+      "source": "paper-2",
+      "target": "paper-48",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "Google Street View"
+      ]
+    },
+    {
+      "source": "paper-3",
+      "target": "paper-8",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "Green View Index"
+      ]
+    },
+    {
+      "source": "paper-3",
+      "target": "paper-14",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "Green View Index"
+      ]
+    },
+    {
+      "source": "paper-4",
+      "target": "paper-26",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "都市植生"
+      ]
+    },
+    {
+      "source": "paper-5",
+      "target": "paper-7",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "LiDAR"
+      ]
+    },
+    {
+      "source": "paper-6",
+      "target": "paper-27",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-6",
+      "target": "paper-36",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-6",
+      "target": "paper-38",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-6",
+      "target": "paper-39",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-6",
+      "target": "paper-40",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-6",
+      "target": "paper-43",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-6",
+      "target": "paper-45",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-6",
+      "target": "paper-47",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-8",
+      "target": "paper-14",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "Green View Index"
+      ]
+    },
+    {
+      "source": "paper-8",
+      "target": "paper-26",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "深層学習"
+      ]
+    },
+    {
+      "source": "paper-9",
+      "target": "paper-35",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "GVI"
+      ]
+    },
+    {
+      "source": "paper-10",
+      "target": "paper-20",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "GIS"
+      ]
+    },
+    {
+      "source": "paper-10",
+      "target": "paper-22",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "GIS"
+      ]
+    },
+    {
+      "source": "paper-12",
+      "target": "paper-13",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "樹木配置"
+      ]
+    },
+    {
+      "source": "paper-12",
+      "target": "paper-15",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "樹木配置"
+      ]
+    },
+    {
+      "source": "paper-12",
+      "target": "paper-19",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "樹木配置"
+      ]
+    },
+    {
+      "source": "paper-12",
+      "target": "paper-29",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "CFD"
+      ]
+    },
+    {
+      "source": "paper-12",
+      "target": "paper-36",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "樹木配置"
+      ]
+    },
+    {
+      "source": "paper-12",
+      "target": "paper-37",
+      "type": "keyword",
+      "weight": 2,
+      "shared": [
+        "樹木配置",
+        "CFD"
+      ]
+    },
+    {
+      "source": "paper-12",
+      "target": "paper-40",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "樹木配置"
+      ]
+    },
+    {
+      "source": "paper-12",
+      "target": "paper-42",
+      "type": "keyword",
+      "weight": 2,
+      "shared": [
+        "樹木配置",
+        "CFD"
+      ]
+    },
+    {
+      "source": "paper-13",
+      "target": "paper-15",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "樹木配置"
+      ]
+    },
+    {
+      "source": "paper-13",
+      "target": "paper-19",
+      "type": "keyword",
+      "weight": 2,
+      "shared": [
+        "遺伝的アルゴリズム",
+        "樹木配置"
+      ]
+    },
+    {
+      "source": "paper-13",
+      "target": "paper-23",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "遺伝的アルゴリズム"
+      ]
+    },
+    {
+      "source": "paper-13",
+      "target": "paper-24",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "MRT"
+      ]
+    },
+    {
+      "source": "paper-13",
+      "target": "paper-32",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "エージェントベースモデル"
+      ]
+    },
+    {
+      "source": "paper-13",
+      "target": "paper-36",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "樹木配置"
+      ]
+    },
+    {
+      "source": "paper-13",
+      "target": "paper-37",
+      "type": "keyword",
+      "weight": 2,
+      "shared": [
+        "MRT",
+        "樹木配置"
+      ]
+    },
+    {
+      "source": "paper-13",
+      "target": "paper-40",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "樹木配置"
+      ]
+    },
+    {
+      "source": "paper-13",
+      "target": "paper-42",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "樹木配置"
+      ]
+    },
+    {
+      "source": "paper-14",
+      "target": "paper-16",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "UTCI"
+      ]
+    },
+    {
+      "source": "paper-14",
+      "target": "paper-22",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "NSGA-II"
+      ]
+    },
+    {
+      "source": "paper-14",
+      "target": "paper-24",
+      "type": "keyword",
+      "weight": 2,
+      "shared": [
+        "NSGA-II",
+        "UTCI"
+      ]
+    },
+    {
+      "source": "paper-14",
+      "target": "paper-36",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "多目的最適化"
+      ]
+    },
+    {
+      "source": "paper-15",
+      "target": "paper-17",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "平均放射温度"
+      ]
+    },
+    {
+      "source": "paper-15",
+      "target": "paper-19",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "樹木配置"
+      ]
+    },
+    {
+      "source": "paper-15",
+      "target": "paper-36",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "樹木配置"
+      ]
+    },
+    {
+      "source": "paper-15",
+      "target": "paper-37",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "樹木配置"
+      ]
+    },
+    {
+      "source": "paper-15",
+      "target": "paper-40",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "樹木配置"
+      ]
+    },
+    {
+      "source": "paper-15",
+      "target": "paper-42",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "樹木配置"
+      ]
+    },
+    {
+      "source": "paper-16",
+      "target": "paper-24",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "UTCI"
+      ]
+    },
+    {
+      "source": "paper-17",
+      "target": "paper-21",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "樹木配置最適化"
+      ]
+    },
+    {
+      "source": "paper-19",
+      "target": "paper-23",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "遺伝的アルゴリズム"
+      ]
+    },
+    {
+      "source": "paper-19",
+      "target": "paper-36",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "樹木配置"
+      ]
+    },
+    {
+      "source": "paper-19",
+      "target": "paper-37",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "樹木配置"
+      ]
+    },
+    {
+      "source": "paper-19",
+      "target": "paper-40",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "樹木配置"
+      ]
+    },
+    {
+      "source": "paper-19",
+      "target": "paper-42",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "樹木配置"
+      ]
+    },
+    {
+      "source": "paper-20",
+      "target": "paper-22",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "GIS"
+      ]
+    },
+    {
+      "source": "paper-22",
+      "target": "paper-24",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "NSGA-II"
+      ]
+    },
+    {
+      "source": "paper-24",
+      "target": "paper-37",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "MRT"
+      ]
+    },
+    {
+      "source": "paper-25",
+      "target": "paper-43",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "街路樹"
+      ]
+    },
+    {
+      "source": "paper-25",
+      "target": "paper-44",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "街路樹"
+      ]
+    },
+    {
+      "source": "paper-26",
+      "target": "paper-29",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "3D Gaussian Splatting"
+      ]
+    },
+    {
+      "source": "paper-26",
+      "target": "paper-30",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "3D Gaussian Splatting"
+      ]
+    },
+    {
+      "source": "paper-26",
+      "target": "paper-31",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "3D Gaussian Splatting"
+      ]
+    },
+    {
+      "source": "paper-27",
+      "target": "paper-36",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-27",
+      "target": "paper-38",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-27",
+      "target": "paper-39",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-27",
+      "target": "paper-40",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-27",
+      "target": "paper-43",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-27",
+      "target": "paper-45",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-27",
+      "target": "paper-47",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-28",
+      "target": "paper-30",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "ドローン"
+      ]
+    },
+    {
+      "source": "paper-28",
+      "target": "paper-34",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "NeRF"
+      ]
+    },
+    {
+      "source": "paper-29",
+      "target": "paper-30",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "3D Gaussian Splatting"
+      ]
+    },
+    {
+      "source": "paper-29",
+      "target": "paper-31",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "3D Gaussian Splatting"
+      ]
+    },
+    {
+      "source": "paper-29",
+      "target": "paper-37",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "CFD"
+      ]
+    },
+    {
+      "source": "paper-29",
+      "target": "paper-42",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "CFD"
+      ]
+    },
+    {
+      "source": "paper-30",
+      "target": "paper-31",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "3D Gaussian Splatting"
+      ]
+    },
+    {
+      "source": "paper-32",
+      "target": "paper-33",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "デジタルツイン"
+      ]
+    },
+    {
+      "source": "paper-34",
+      "target": "paper-44",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "VR"
+      ]
+    },
+    {
+      "source": "paper-35",
+      "target": "paper-48",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "パノラマ画像"
+      ]
+    },
+    {
+      "source": "paper-36",
+      "target": "paper-37",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "樹木配置"
+      ]
+    },
+    {
+      "source": "paper-36",
+      "target": "paper-38",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-36",
+      "target": "paper-39",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-36",
+      "target": "paper-40",
+      "type": "keyword",
+      "weight": 2,
+      "shared": [
+        "樹木配置",
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-36",
+      "target": "paper-42",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "樹木配置"
+      ]
+    },
+    {
+      "source": "paper-36",
+      "target": "paper-43",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-36",
+      "target": "paper-45",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-36",
+      "target": "paper-47",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-37",
+      "target": "paper-40",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "樹木配置"
+      ]
+    },
+    {
+      "source": "paper-37",
+      "target": "paper-42",
+      "type": "keyword",
+      "weight": 3,
+      "shared": [
+        "最適化",
+        "樹木配置",
+        "CFD"
+      ]
+    },
+    {
+      "source": "paper-38",
+      "target": "paper-39",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-38",
+      "target": "paper-40",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-38",
+      "target": "paper-43",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-38",
+      "target": "paper-45",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-38",
+      "target": "paper-47",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-39",
+      "target": "paper-40",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-39",
+      "target": "paper-43",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-39",
+      "target": "paper-45",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-39",
+      "target": "paper-47",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-40",
+      "target": "paper-42",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "樹木配置"
+      ]
+    },
+    {
+      "source": "paper-40",
+      "target": "paper-43",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-40",
+      "target": "paper-45",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-40",
+      "target": "paper-47",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-43",
+      "target": "paper-44",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "街路樹"
+      ]
+    },
+    {
+      "source": "paper-43",
+      "target": "paper-45",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-43",
+      "target": "paper-47",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    },
+    {
+      "source": "paper-45",
+      "target": "paper-47",
+      "type": "keyword",
+      "weight": 1,
+      "shared": [
+        "緑視率"
+      ]
+    }
+  ],
+  "section_labels": {
+    "A": {
+      "en": "GVI Calculation",
+      "ja": "GVI計算手法"
+    },
+    "B": {
+      "en": "Tree Optimization",
+      "ja": "樹木配置最適化"
+    },
+    "C": {
+      "en": "Digital Twin / 3DGS",
+      "ja": "デジタルツイン・3DGS"
+    },
+    "D": {
+      "en": "Landscape Quality",
+      "ja": "景観品質評価"
+    },
+    "E": {
+      "en": "Japanese Literature",
+      "ja": "日本語文献"
+    }
+  },
+  "meta": {
+    "generated": "2026-04-03",
+    "total_papers": 49
+  }
+}
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script>
+// ── Data ───────────────────────────────────────────────────────────────────
+const raw = JSON.parse(document.getElementById('graph-data').textContent);
+const allNodes = raw.nodes.map(d => ({...d}));
+const allEdges = raw.edges.map(d => ({...d}));
+const secLabels = raw.section_labels;
+
+const COLOR = { CENTER:'#ffffff', A:'#4ade80', B:'#60a5fa', C:'#a78bfa', D:'#fb923c', E:'#f87171' };
+const SEC_COUNTS = {A:11, B:14, C:9, D:1, E:14};
+const SEC_DEFS = [
+  {id:'A', ja:'GVI計算手法'},
+  {id:'B', ja:'樹木配置最適化'},
+  {id:'C', ja:'デジタルツイン'},
+  {id:'D', ja:'景観品質評価'},
+  {id:'E', ja:'日本語文献'},
+];
+
+function nodeR(d) { return d.id==='this-study' ? 26 : 6+(d.relevance-2)*4; }
+
+// ── State ──────────────────────────────────────────────────────────────────
+const st = {
+  secs: new Set(['A','B','C','D','E']),
+  yMin:1987, yMax:2026, minRel:2,
+  kwEdges:false, query:'',
+};
+
+// ── SVG ─────────────────────────────────────────────────────────────────────
+const svg = d3.select('#graph-svg');
+const W = () => document.getElementById('graph-container').clientWidth;
+const H = () => document.getElementById('graph-container').clientHeight;
+
+const defs = svg.append('defs');
+function addGlow(id, col, std) {
+  const f = defs.append('filter').attr('id',id).attr('x','-60%').attr('y','-60%').attr('width','220%').attr('height','220%');
+  f.append('feGaussianBlur').attr('stdDeviation',std).attr('result','b');
+  f.append('feFlood').attr('flood-color',col).attr('flood-opacity','0.5').attr('result','c');
+  f.append('feComposite').attr('in','c').attr('in2','b').attr('operator','in').attr('result','g');
+  const m = f.append('feMerge');
+  m.append('feMergeNode').attr('in','g');
+  m.append('feMergeNode').attr('in','SourceGraphic');
+}
+addGlow('glow-center','#ffffff',7);
+Object.entries(COLOR).forEach(([k,c]) => { if(k!=='CENTER') addGlow('glow-'+k,c,4); });
+
+const zG    = svg.append('g').attr('id','zg');
+const kwG   = zG.append('g');
+const mainG = zG.append('g');
+const nodeG = zG.append('g');
+const labG  = zG.append('g');
+
+const zoom = d3.zoom().scaleExtent([0.15,6]).on('zoom', e => zG.attr('transform',e.transform));
+svg.call(zoom);
+
+// ── Simulation ──────────────────────────────────────────────────────────────
+const nodes = allNodes;
+const edges = allEdges;
+
+const sim = d3.forceSimulation(nodes)
+  .force('link', d3.forceLink(edges).id(d=>d.id)
+    .distance(d => d.type==='main' ? 150-d.weight*13 : 190)
+    .strength(d => d.type==='main' ? 0.32 : 0.04))
+  .force('charge', d3.forceManyBody().strength(d => d.id==='this-study' ? -1100 : -140))
+  .force('center', d3.forceCenter(W()/2, H()/2))
+  .force('collide', d3.forceCollide().radius(d => nodeR(d)+5))
+  .force('radial', d3.forceRadial(d => d.id==='this-study' ? 0 : 310, W()/2, H()/2).strength(0.07))
+  .alphaDecay(0.018)
+  .on('tick', tick);
+
+// ── Edges ───────────────────────────────────────────────────────────────────
+const mainLines = mainG.selectAll('line')
+  .data(edges.filter(e=>e.type==='main'))
+  .join('line')
+  .attr('stroke', d => {
+    const s = nodes.find(n => n.id===(d.source.id||d.source));
+    return s ? COLOR[s.group]||'#888' : '#888';
+  })
+  .attr('stroke-width', d => d.weight*0.55)
+  .attr('stroke-opacity', 0.6);
+
+const kwLines = kwG.selectAll('line')
+  .data(edges.filter(e=>e.type==='keyword'))
+  .join('line')
+  .attr('stroke','#94a3b8')
+  .attr('stroke-width',0.7)
+  .attr('stroke-dasharray','3 4')
+  .attr('stroke-opacity',0);
+
+// ── Nodes ────────────────────────────────────────────────────────────────────
+const nodeGs = nodeG.selectAll('g')
+  .data(nodes).join('g')
+  .style('cursor','pointer')
+  .call(d3.drag()
+    .on('start',(e,d)=>{ if(!e.active) sim.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y; })
+    .on('drag', (e,d)=>{ d.fx=e.x; d.fy=e.y; })
+    .on('end',  (e,d)=>{ if(!e.active) sim.alphaTarget(0); d.fx=null; d.fy=null; }));
+
+nodeGs.append('circle')
+  .attr('r', d=>nodeR(d))
+  .attr('fill', d=>COLOR[d.group]||'#888')
+  .attr('fill-opacity', d=>d.id==='this-study'?1:0.85)
+  .attr('filter', d=>d.id==='this-study'?'url(#glow-center)':null)
+  .attr('stroke', d=>d.id==='this-study'?'#fff':'none')
+  .attr('stroke-width', d=>d.id==='this-study'?2:0);
+
+// Labels for center + high-relevance papers
+const labData = nodes.filter(d=>d.id==='this-study'||d.relevance>=4);
+const labSels = labG.selectAll('text')
+  .data(labData).join('text')
+  .attr('class','node-label')
+  .attr('text-anchor','middle')
+  .attr('fill', d=>d.id==='this-study'?'#fff':COLOR[d.group])
+  .attr('font-size', d=>d.id==='this-study'?12:8.5)
+  .attr('font-weight', d=>d.id==='this-study'?700:400)
+  .attr('opacity', d=>d.id==='this-study'?1:0.8)
+  .text(d=>{
+    if(d.id==='this-study') return '本研究 / This Study';
+    const t=d.title; return t.length>22?t.slice(0,20)+'…':t;
+  });
+
+// ── Tick ─────────────────────────────────────────────────────────────────────
+function tick() {
+  mainLines.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+  kwLines.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+  nodeGs.attr('transform',d=>`translate(${d.x},${d.y})`);
+  labSels.each(function(d){
+    const n=nodes.find(n=>n.id===d.id);
+    if(n) d3.select(this).attr('transform',`translate(${n.x},${n.y})`).attr('dy',-(nodeR(n)+5));
+  });
+}
+
+// ── Tooltip ──────────────────────────────────────────────────────────────────
+const tip = document.getElementById('tooltip');
+nodeGs
+  .on('mouseover',(ev,d)=>{
+    if(d.id==='this-study') return;
+    const aShort = d.author.includes(',') ? d.author.split(',')[0].trim()+' et al.' : d.author;
+    const sl = secLabels[d.group]||{en:d.group,ja:''};
+    tip.innerHTML = `
+      <div class="tt-sec" style="color:${COLOR[d.group]}">${sl.en} / ${sl.ja}</div>
+      <div class="tt-ttl">${d.title}</div>
+      <div class="tt-meta">${aShort} (${d.year})</div>
+      <div><span class="son">${'&#9733;'.repeat(d.relevance)}</span><span class="soff">${'&#9733;'.repeat(5-d.relevance)}</span></div>`;
+    tip.style.display='block';
+    hlConnected(d);
+  })
+  .on('mousemove',ev=>{
+    tip.style.left = Math.min(ev.clientX+14,window.innerWidth-275)+'px';
+    tip.style.top  = Math.min(ev.clientY+14,window.innerHeight-110)+'px';
+  })
+  .on('mouseout',(ev,d)=>{ tip.style.display='none'; resetHl(); });
+
+// ── Click ────────────────────────────────────────────────────────────────────
+nodeGs.on('click',(ev,d)=>{
+  ev.stopPropagation();
+  showPanel(d);
+});
+svg.on('click',()=>{ document.getElementById('info-panel').classList.remove('open'); resetHl(); });
+document.getElementById('close-panel').addEventListener('click',()=>{ document.getElementById('info-panel').classList.remove('open'); resetHl(); });
+
+function showPanel(d) {
+  const urlH = d.url
+    ? `<a class="doi-link" href="${d.url}" target="_blank" rel="noopener">Open paper &#8599;</a>`
+    : `<span class="doi-none">DOI / URL not available</span>`;
+  const kws = d.keywords.map(k=>`<span class="kw-chip">${k}</span>`).join('');
+  const sl = secLabels[d.group]||{en:d.group,ja:''};
+  const badgeColor = COLOR[d.group]||'#888';
+  const starsHtml = `<span class="son">${'&#9733;'.repeat(d.relevance)}</span><span class="soff">${'&#9733;'.repeat(5-d.relevance)}</span>`;
+
+  let html = '';
+  if (d.id !== 'this-study') {
+    html = `
+      <div class="i-badge" style="color:${badgeColor};border-color:${badgeColor};background:${badgeColor}1a">
+        ${sl.en} / ${sl.ja}
+      </div>
+      <div class="i-title">${d.title}</div>
+      <div class="i-meta">
+        <span>${d.author}</span>
+        <span class="i-jrn">${d.journal}</span>
+        <span class="i-yr">${d.year}</span>
+      </div>
+      <div class="i-stars">${starsHtml}</div>
+      <div class="i-kws">${kws}</div>
+      <div class="i-sec"><h3>概要 / Summary</h3><p>${d.summary||'（記載なし）'}</p></div>
+      <div class="i-sec"><h3>本研究との関連 / Relationship</h3><p>${d.relationship||'（記載なし）'}</p></div>
+      <div>${urlH}</div>`;
+  } else {
+    html = `
+      <div class="i-badge" style="color:#fff;border-color:#fff;background:#ffffff1a">本研究 / This Study</div>
+      <div class="i-title">${d.title}</div>
+      <div class="i-meta"><span>${d.author}</span><span class="i-jrn">${d.journal}</span><span class="i-yr">${d.year}</span></div>
+      <div class="i-kws">${d.keywords.map(k=>`<span class="kw-chip">${k}</span>`).join('')}</div>
+      <div class="i-sec"><h3>概要</h3><p>${d.summary}</p></div>`;
+  }
+  document.getElementById('info-content').innerHTML = html;
+  document.getElementById('info-panel').classList.add('open');
+}
+
+// ── Highlight ─────────────────────────────────────────────────────────────────
+function hlConnected(target) {
+  const conn = new Set([target.id,'this-study']);
+  edges.forEach(e=>{
+    const s=e.source.id||e.source, t=e.target.id||e.target;
+    if(s===target.id||t===target.id){conn.add(s);conn.add(t);}
+  });
+  nodeGs.attr('opacity',d=>conn.has(d.id)?1:0.1);
+  labSels.attr('opacity',d=>conn.has(d.id)?1:0.04);
+  mainLines.attr('stroke-opacity',d=>{
+    const s=d.source.id,t=d.target.id;
+    return(s===target.id||t===target.id)?0.9:0.03;
+  });
+}
+function resetHl() { applyFilters(); }
+
+// ── Filters ──────────────────────────────────────────────────────────────────
+function visIds() {
+  const v = new Set(['this-study']);
+  nodes.forEach(n=>{
+    if(n.id==='this-study') return;
+    const ok = st.secs.has(n.group)
+      && n.year>=st.yMin && n.year<=st.yMax
+      && n.relevance>=st.minRel
+      && (!st.query || [n.title,n.author,...n.keywords,n.summary].join(' ').toLowerCase().includes(st.query));
+    if(ok) v.add(n.id);
+  });
+  return v;
+}
+
+function applyFilters() {
+  const v = visIds();
+  document.getElementById('vis-count').textContent = v.size-1;
+
+  nodeGs.attr('opacity',d=>v.has(d.id)?1:0.06)
+        .attr('pointer-events',d=>v.has(d.id)?'auto':'none');
+  labSels.attr('opacity',d=>{
+    if(d.id==='this-study') return 1;
+    return v.has(d.id)?0.8:0.03;
+  });
+  mainLines.attr('stroke-opacity',d=>{
+    const s=d.source.id||d.source, t=d.target.id||d.target;
+    return (v.has(s)&&v.has(t))?0.6:0.03;
+  });
+  kwLines.attr('stroke-opacity',d=>{
+    const s=d.source.id||d.source, t=d.target.id||d.target;
+    return st.kwEdges&&v.has(s)&&v.has(t)?0.2:0;
+  });
+  // Search rings
+  nodeGs.select('circle')
+    .attr('stroke',d=>{
+      if(d.id==='this-study') return '#fff';
+      if(!st.query) return 'none';
+      const m=[d.title,d.author,...d.keywords].join(' ').toLowerCase().includes(st.query);
+      return m&&v.has(d.id)?'#fbbf24':'none';
+    })
+    .attr('stroke-width',d=>{
+      if(d.id==='this-study') return 2;
+      if(!st.query) return 0;
+      const m=[d.title,d.author,...d.keywords].join(' ').toLowerCase().includes(st.query);
+      return m&&v.has(d.id)?3:0;
+    });
+}
+
+// ── Build sidebar ─────────────────────────────────────────────────────────────
+// Sections
+const secGrid = document.getElementById('section-filters');
+SEC_DEFS.forEach(s=>{
+  const btn=document.createElement('button');
+  btn.className='sec-btn active'; btn.dataset.sec=s.id;
+  btn.innerHTML=`<span class="dot" style="background:${COLOR[s.id]}"></span>${s.ja}`;
+  btn.addEventListener('click',()=>{
+    if(st.secs.has(s.id)){st.secs.delete(s.id);btn.classList.remove('active');btn.classList.add('inactive');}
+    else{st.secs.add(s.id);btn.classList.remove('inactive');btn.classList.add('active');}
+    applyFilters();
+  });
+  secGrid.appendChild(btn);
+});
+
+// Legend
+const legDiv = document.getElementById('legend-secs');
+SEC_DEFS.forEach(s=>{
+  const item=document.createElement('div'); item.className='leg-item';
+  item.innerHTML=`<span class="leg-dot" style="background:${COLOR[s.id]}"></span><span>${s.ja}</span><span class="leg-cnt">${SEC_COUNTS[s.id]}</span>`;
+  legDiv.appendChild(item);
+});
+
+// Relevance buttons
+const relRow = document.getElementById('rel-filters');
+[2,3,4,5].forEach(r=>{
+  const btn=document.createElement('button'); btn.className='rel-btn'+(r===2?' active':'');
+  btn.textContent='★'.repeat(r); btn.dataset.rel=r;
+  btn.addEventListener('click',()=>{
+    st.minRel=r;
+    relRow.querySelectorAll('.rel-btn').forEach(b=>b.classList.toggle('active',+b.dataset.rel===r));
+    applyFilters();
+  });
+  relRow.appendChild(btn);
+});
+
+// Year slider
+const yMinI=document.getElementById('year-min'), yMaxI=document.getElementById('year-max');
+const rFill=document.getElementById('rng-fill');
+function updRange(){
+  const lo=(+yMinI.value-1987)/(2026-1987)*100;
+  const hi=(+yMaxI.value-1987)/(2026-1987)*100;
+  rFill.style.left=lo+'%'; rFill.style.width=(hi-lo)+'%';
+  document.getElementById('yr-min-lbl').textContent=yMinI.value;
+  document.getElementById('yr-max-lbl').textContent=yMaxI.value;
+}
+yMinI.addEventListener('input',()=>{ if(+yMinI.value>+yMaxI.value) yMinI.value=yMaxI.value; st.yMin=+yMinI.value; updRange(); applyFilters(); });
+yMaxI.addEventListener('input',()=>{ if(+yMaxI.value<+yMinI.value) yMaxI.value=yMinI.value; st.yMax=+yMaxI.value; updRange(); applyFilters(); });
+updRange();
+
+// Keyword edges toggle
+const kwTog=document.getElementById('kw-toggle');
+kwTog.addEventListener('click',()=>{ st.kwEdges=!st.kwEdges; kwTog.classList.toggle('on',st.kwEdges); applyFilters(); });
+
+// Search
+document.getElementById('search-input').addEventListener('input',function(){ st.query=this.value.trim().toLowerCase(); applyFilters(); });
+
+// Reset zoom
+document.getElementById('btn-reset').addEventListener('click',()=>{
+  svg.transition().duration(550).call(zoom.transform, d3.zoomIdentity.translate(W()/2,H()/2).scale(0.82).translate(-W()/2,-H()/2));
+});
+
+// Pause/Resume
+let paused=false;
+document.getElementById('btn-pause').addEventListener('click',function(){
+  paused=!paused;
+  if(paused){sim.stop();this.textContent='&#9654; Resume';}
+  else{sim.restart();this.textContent='&#9646;&#9646; Pause';}
+});
+
+// Resize
+window.addEventListener('resize',()=>{
+  sim.force('center',d3.forceCenter(W()/2,H()/2))
+     .force('radial',d3.forceRadial(d=>d.id==='this-study'?0:310,W()/2,H()/2).strength(0.07))
+     .alpha(0.1).restart();
+});
+
+applyFilters();
+</script>
+</body>
+</html>
