@@ -2982,9 +2982,9 @@ svg { width:100%; height:100%; display:block; }
       ]
     },
     {
-      "id": "kw-機械学習",
+      "id": "kw-Word2Vec",
       "type": "kw",
-      "label": "機械学習",
+      "label": "Word2Vec",
       "count": 1,
       "rare": true,
       "thisStudy": false,
@@ -3021,9 +3021,22 @@ svg { width:100%; height:100%; display:block; }
       ]
     },
     {
-      "id": "kw-学術言説",
+      "id": "kw-意味分析",
       "type": "kw",
-      "label": "学術言説",
+      "label": "意味分析",
+      "count": 1,
+      "rare": true,
+      "thisStudy": false,
+      "section": "F",
+      "color": "#fbbf24",
+      "papers": [
+        "paper-901"
+      ]
+    },
+    {
+      "id": "kw-機械学習",
+      "type": "kw",
+      "label": "機械学習",
       "count": 1,
       "rare": true,
       "thisStudy": false,
@@ -4480,19 +4493,20 @@ svg { width:100%; height:100%; display:block; }
       "no": 901,
       "group": "F",
       "myPaper": true,
-      "title": "The Image of a Famous Architect as a Whole as it Appears in Academic Discourse",
-      "author": "K. Ono, N. Tanikawa, S. Yamada",
-      "journal": "CAADRIA 2025",
+      "title": "The Image of a Famous Architect as a Whole as it Appears in Academic Discourse: Comparison of conceptual diversity and interpretation using text mining",
+      "author": "Kotaro Ono, Nao Tanikawa, Satoshi Yamada",
+      "journal": "CAADRIA 2025, Vol.1, pp.561-570",
       "year": 2025,
-      "url": null,
+      "url": "https://doi.org/10.52842/conf.caadria.2025.1.561",
       "keywords": [
-        "機械学習",
+        "Word2Vec",
         "テキスト解析",
         "建築家イメージ",
-        "学術言説"
+        "意味分析",
+        "機械学習"
       ],
-      "summary": "著名建築家のアカデミックな言説に現れる全体的イメージを機械学習で分析した研究。",
-      "relationship": "著者の先行研究：機械学習を用いた建築的評価・表現分析の方法論。",
+      "summary": "Word2Vec を用いてプリツカー賞受賞者らの建築家イメージが学術言説の中でどのように表現・多義化されているかをテキストマイニングで比較分析した研究。",
+      "relationship": "著者の先行研究：機械学習（Word2Vec）を用いた建築的表現分析。本研究のCLIPによる景観評価と方法論的に連続する。",
       "relevance": 5
     },
     {
@@ -6045,7 +6059,7 @@ svg { width:100%; height:100%; display:block; }
     },
     {
       "source": "paper-901",
-      "target": "kw-機械学習",
+      "target": "kw-Word2Vec",
       "type": "pk"
     },
     {
@@ -6060,7 +6074,12 @@ svg { width:100%; height:100%; display:block; }
     },
     {
       "source": "paper-901",
-      "target": "kw-学術言説",
+      "target": "kw-意味分析",
+      "type": "pk"
+    },
+    {
+      "source": "paper-901",
+      "target": "kw-機械学習",
       "type": "pk"
     },
     {
@@ -11161,8 +11180,8 @@ svg { width:100%; height:100%; display:block; }
       ]
     },
     {
-      "source": "kw-テキスト解析",
-      "target": "kw-学術言説",
+      "source": "kw-Word2Vec",
+      "target": "kw-テキスト解析",
       "type": "kk",
       "weight": 1,
       "papers": [
@@ -11170,7 +11189,7 @@ svg { width:100%; height:100%; display:block; }
       ]
     },
     {
-      "source": "kw-テキスト解析",
+      "source": "kw-Word2Vec",
       "target": "kw-建築家イメージ",
       "type": "kk",
       "weight": 1,
@@ -11179,7 +11198,16 @@ svg { width:100%; height:100%; display:block; }
       ]
     },
     {
-      "source": "kw-テキスト解析",
+      "source": "kw-Word2Vec",
+      "target": "kw-意味分析",
+      "type": "kk",
+      "weight": 1,
+      "papers": [
+        "paper-901"
+      ]
+    },
+    {
+      "source": "kw-Word2Vec",
       "target": "kw-機械学習",
       "type": "kk",
       "weight": 1,
@@ -11188,7 +11216,7 @@ svg { width:100%; height:100%; display:block; }
       ]
     },
     {
-      "source": "kw-学術言説",
+      "source": "kw-テキスト解析",
       "target": "kw-建築家イメージ",
       "type": "kk",
       "weight": 1,
@@ -11197,7 +11225,16 @@ svg { width:100%; height:100%; display:block; }
       ]
     },
     {
-      "source": "kw-学術言説",
+      "source": "kw-テキスト解析",
+      "target": "kw-意味分析",
+      "type": "kk",
+      "weight": 1,
+      "papers": [
+        "paper-901"
+      ]
+    },
+    {
+      "source": "kw-テキスト解析",
       "target": "kw-機械学習",
       "type": "kk",
       "weight": 1,
@@ -11207,6 +11244,24 @@ svg { width:100%; height:100%; display:block; }
     },
     {
       "source": "kw-建築家イメージ",
+      "target": "kw-意味分析",
+      "type": "kk",
+      "weight": 1,
+      "papers": [
+        "paper-901"
+      ]
+    },
+    {
+      "source": "kw-建築家イメージ",
+      "target": "kw-機械学習",
+      "type": "kk",
+      "weight": 1,
+      "papers": [
+        "paper-901"
+      ]
+    },
+    {
+      "source": "kw-意味分析",
       "target": "kw-機械学習",
       "type": "kk",
       "weight": 1,
@@ -11365,18 +11420,18 @@ svg { width:100%; height:100%; display:block; }
     }
   },
   "this_study_kws": [
-    "3D Gaussian Splatting",
-    "CLIP",
-    "樹木配置",
     "遺伝的アルゴリズム",
+    "樹木配置",
     "デジタルツイン",
-    "緑視率"
+    "CLIP",
+    "緑視率",
+    "3D Gaussian Splatting"
   ],
   "meta": {
     "generated": "2026-04-06",
     "total_papers": 67,
-    "total_kws": 220,
-    "rare_kws": 180,
+    "total_kws": 221,
+    "rare_kws": 181,
     "journal_nodes": 2
   }
 }</script>
@@ -11523,8 +11578,13 @@ function rebuildGraph(){
 
   // ── edges ─────────────────────────────────────────────────────────────
   eSel_kk=eKK.selectAll('line').data(activeKK).join('line')
-    .attr('stroke','#334466').attr('stroke-width',0.7)
-    .attr('stroke-dasharray','4 3').attr('stroke-opacity',st.showKK?0.35:0);
+    .attr('stroke',e=>{
+      // weight >= 3: vivid, weight == 2: mid, weight == 1: faint
+      return e.weight>=3?'#5b8dd9':e.weight>=2?'#3d6aad':'#2d4a7a';
+    })
+    .attr('stroke-width',e=>Math.min(e.weight*0.6+0.5,2.5))
+    .attr('stroke-dasharray','5 3')
+    .attr('stroke-opacity',st.showKK?e=>Math.min(0.25+e.weight*0.1,0.6):0);
 
   eSel_pj=ePJ.selectAll('line').data(activePJ).join('line')
     .attr('stroke','#64748b').attr('stroke-opacity',0.25).attr('stroke-width',0.8)
@@ -11700,7 +11760,8 @@ function tick(){
 }
 
 function applyKKVis(){
-  if(eSel_kk) eSel_kk.attr('stroke-opacity',st.showKK?0.35:0);
+  if(eSel_kk) eSel_kk.attr('stroke-opacity',
+    st.showKK?e=>Math.min(0.25+e.weight*0.1,0.6):0);
 }
 
 // ── highlight ─────────────────────────────────────────────────────────────
@@ -11738,7 +11799,8 @@ function resetHl(){
   lSel.attr('opacity',d=>d.type==='paper'?(d.myPaper?0.9:0.65):d.type==='journal'?0.8:d.rare?0.65:0.95);
   eSel_pk.attr('stroke-opacity',0.25).attr('stroke-width',0.85);
   eSel_pj.attr('stroke-opacity',0.25);
-  if(eSel_kk) eSel_kk.attr('stroke-opacity',st.showKK?0.35:0);
+  if(eSel_kk) eSel_kk.attr('stroke-opacity',
+    st.showKK?e=>Math.min(0.25+e.weight*0.1,0.6):0);
 }
 
 // ── panels ─────────────────────────────────────────────────────────────────
