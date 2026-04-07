@@ -46,6 +46,19 @@ body { font-family:'Segoe UI',system-ui,sans-serif; background:var(--bg); color:
 .cb { flex:1; padding:6px 5px; font-size:10.5px; background:var(--bg3); border:1px solid var(--bd); border-radius:5px; color:var(--tx2); cursor:pointer; transition:all .15s; }
 .cb:hover { background:var(--bg4); color:var(--tx); border-color:var(--acc); }
 
+/* Sidebar collapse */
+#sb { transition:width .25s ease, min-width .25s ease; }
+#sb.collapsed { width:44px; min-width:44px; padding:10px 6px; overflow:hidden; }
+#sb.collapsed #sb-body { display:none; }
+#sb-tog-row { display:flex; justify-content:flex-end; margin-bottom:2px; }
+#sb-tog { background:var(--bg3); border:1px solid var(--bd); border-radius:4px; padding:3px 8px; cursor:pointer; font-size:12px; color:var(--tx2); transition:all .15s; line-height:1; }
+#sb-tog:hover { color:var(--tx); border-color:var(--acc); }
+
+/* Right panel tab */
+#rp-tab { position:fixed; right:0; top:50%; transform:translateY(-50%); width:20px; height:64px; background:var(--bg2); border:1px solid var(--bd); border-right:none; border-radius:6px 0 0 6px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--tx3); font-size:16px; z-index:49; transition:right .28s cubic-bezier(.4,0,.2,1), color .15s; }
+#rp-tab:hover { color:var(--tx); }
+#rp.open + #rp-tab { right:370px; }
+
 /* View toggle */
 .vt { display:flex; gap:4px; }
 .vt-btn { flex:1; padding:6px 4px; font-size:10.5px; background:var(--bg3); border:1px solid var(--bd); border-radius:5px; color:var(--tx2); cursor:pointer; transition:all .15s; text-align:center; }
@@ -120,6 +133,8 @@ svg { width:100%; height:100%; display:block; }
 <body>
 
 <div id="sb">
+  <div id="sb-tog-row"><button id="sb-tog" onclick="toggleSb()" title="サイドバーを折りたたむ">◀</button></div>
+  <div id="sb-body">
   <div class="sb-hd">
     <h1>Literature Graph</h1>
     <p>関連研究マップ</p>
@@ -177,6 +192,7 @@ svg { width:100%; height:100%; display:block; }
     <button class="cb" id="btn-rst">&#x27F2; Reset</button>
     <button class="cb" id="btn-ps">&#9646;&#9646; Pause</button>
   </div>
+  </div><!-- /sb-body -->
 </div>
 
 <div id="gc"><svg id="gs"></svg></div>
@@ -186,6 +202,7 @@ svg { width:100%; height:100%; display:block; }
   <button id="rp-close">&#x2715;</button>
   <div id="rp-content"></div>
 </div></div>
+<div id="rp-tab" onclick="togglePanel()" title="パネルを開閉">›</div>
 
 <div id="tt"></div>
 
@@ -9244,11 +9261,11 @@ svg { width:100%; height:100%; display:block; }
     }
   },
   "this_study_kws": [
-    "遺伝的アルゴリズム",
+    "CLIP",
+    "樹木配置",
     "デジタルツイン",
     "3D Gaussian Splatting",
-    "樹木配置",
-    "CLIP",
+    "遺伝的アルゴリズム",
     "緑視率"
   ],
   "meta": {
@@ -9553,8 +9570,8 @@ function rebuildGraph(){
 // ── list view ──────────────────────────────────────────────────────────────
 function switchView(v){
   st.view=v;
-  document.getElementById('gc').style.display=v==='graph'?'':'none';
-  document.getElementById('lv').style.display=v==='list'?'':'none';
+  document.getElementById('gc').style.display=v==='graph'?'flex':'none';
+  document.getElementById('lv').style.display=v==='list'?'block':'none';
   document.getElementById('btn-graph').classList.toggle('active',v==='graph');
   document.getElementById('btn-list').classList.toggle('active',v==='list');
   if(v==='list') renderList();
@@ -9651,7 +9668,31 @@ function resetHl(){
 }
 
 // ── panels ─────────────────────────────────────────────────────────────────
-function closePanel(){ document.getElementById('rp').classList.remove('open'); }
+function closePanel(){
+  document.getElementById('rp').classList.remove('open');
+  updateTabArrow();
+}
+function togglePanel(){
+  const rp=document.getElementById('rp');
+  const hasContent=document.getElementById('rp-content').children.length>0;
+  if(rp.classList.contains('open')) rp.classList.remove('open');
+  else if(hasContent) rp.classList.add('open');
+  updateTabArrow();
+}
+function updateTabArrow(){
+  const open=document.getElementById('rp').classList.contains('open');
+  document.getElementById('rp-tab').textContent=open?'›':'‹';
+}
+function toggleSb(){
+  const sb=document.getElementById('sb');
+  sb.classList.toggle('collapsed');
+  const tog=document.getElementById('sb-tog');
+  tog.textContent=sb.classList.contains('collapsed')?'▶':'◀';
+  tog.title=sb.classList.contains('collapsed')?'サイドバーを開く':'サイドバーを折りたたむ';
+  if(sim) sim.force('center',d3.forceCenter(W()/2,H()/2)).alpha(0.1).restart();
+}
+window.togglePanel=togglePanel;
+window.toggleSb=toggleSb;
 
 function showKwPanel(d){
   const papers=PA_NODES.filter(p=>p.keywords.includes(d.label))
