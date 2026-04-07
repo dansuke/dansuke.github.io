@@ -9261,12 +9261,12 @@ svg { width:100%; height:100%; display:block; }
     }
   },
   "this_study_kws": [
-    "3D Gaussian Splatting",
-    "デジタルツイン",
-    "遺伝的アルゴリズム",
     "緑視率",
+    "CLIP",
+    "3D Gaussian Splatting",
     "樹木配置",
-    "CLIP"
+    "遺伝的アルゴリズム",
+    "デジタルツイン"
   ],
   "meta": {
     "generated": "2026-04-07",
@@ -9605,7 +9605,7 @@ function renderList(){
             <div class="lv-ttl${p.myPaper?' lv-mine':''}">${p.title}</div>
             <div class="lv-meta">${p.author} · ${p.year} · <em>${p.journal||''}</em></div>
             ${p.summary?`<div class="lv-sum">${p.summary}</div>`:''}
-            <div class="lv-kws">${p.keywords.map(k=>`<span class="kc">${k}</span>`).join('')}</div>
+            <div class="lv-kws">${p.keywords.map(k=>`<span class="kc" onclick="event.stopPropagation();lvFilterKw(this,'${k.replace(/'/g,"\'")}')">${k}</span>`).join('')}</div>
           </div>
         </div>`).join('')}
     </div>`;
@@ -9613,6 +9613,22 @@ function renderList(){
   document.getElementById('lv-inner').innerHTML=html||
     '<div style="color:var(--tx3);padding:60px;text-align:center">該当する論文がありません</div>';
 }
+
+function lvFilterKw(el, kw){
+  const inp=document.getElementById('q');
+  // toggle: if same kw is already active, clear it
+  if(st.q===kw.toLowerCase()){
+    st.q=''; inp.value='';
+  } else {
+    st.q=kw.toLowerCase(); inp.value=kw;
+  }
+  renderList();
+  // highlight active kw tags
+  document.querySelectorAll('#lv-inner .kc').forEach(span=>{
+    span.classList.toggle('hl', span.textContent===kw && st.q===kw.toLowerCase());
+  });
+}
+window.lvFilterKw=lvFilterKw;
 
 // ── tick ───────────────────────────────────────────────────────────────────
 function tick(){
@@ -9833,7 +9849,9 @@ tgThis.addEventListener('click',()=>{
 
 // search
 document.getElementById('q').addEventListener('input',function(){
-  st.q=this.value.trim().toLowerCase(); rebuildGraph();
+  st.q=this.value.trim().toLowerCase();
+  if(st.view==='list') renderList();
+  else rebuildGraph();
 });
 
 // reset / pause
