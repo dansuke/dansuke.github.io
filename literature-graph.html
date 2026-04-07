@@ -46,9 +46,31 @@ body { font-family:'Segoe UI',system-ui,sans-serif; background:var(--bg); color:
 .cb { flex:1; padding:6px 5px; font-size:10.5px; background:var(--bg3); border:1px solid var(--bd); border-radius:5px; color:var(--tx2); cursor:pointer; transition:all .15s; }
 .cb:hover { background:var(--bg4); color:var(--tx); border-color:var(--acc); }
 
+/* View toggle */
+.vt { display:flex; gap:4px; }
+.vt-btn { flex:1; padding:6px 4px; font-size:10.5px; background:var(--bg3); border:1px solid var(--bd); border-radius:5px; color:var(--tx2); cursor:pointer; transition:all .15s; text-align:center; }
+.vt-btn.active { background:var(--acc); border-color:var(--acc); color:#fff; }
+
 /* Graph */
 #gc { flex:1; height:100vh; background:var(--bg); overflow:hidden; }
 svg { width:100%; height:100%; display:block; }
+
+/* List view */
+#lv { flex:1; height:100vh; overflow-y:auto; display:none; background:var(--bg); padding:20px 24px; scrollbar-width:thin; scrollbar-color:var(--bd) transparent; }
+#lv::-webkit-scrollbar{width:4px}#lv::-webkit-scrollbar-thumb{background:var(--bd)}
+.lv-sec { margin-bottom:28px; }
+.lv-sec-hd { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; padding-bottom:6px; border-bottom:1px solid var(--bd); margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+.lv-cnt { font-size:10px; color:var(--tx3); font-weight:400; text-transform:none; letter-spacing:0; }
+.lv-row { display:flex; gap:12px; padding:9px 11px; background:var(--bg2); border:1px solid var(--bd); border-radius:8px; margin-bottom:6px; cursor:pointer; transition:all .15s; }
+.lv-row:hover { border-color:var(--acc); background:var(--bg3); }
+.lv-row.lv-mine { border-color:rgba(251,191,36,.35); }
+.lv-no { font-size:10px; color:var(--tx3); min-width:28px; padding-top:2px; flex-shrink:0; }
+.lv-body { flex:1; min-width:0; }
+.lv-ttl { font-size:12px; font-weight:600; color:var(--tx); line-height:1.45; margin-bottom:3px; }
+.lv-ttl.lv-mine { color:var(--gold); }
+.lv-meta { font-size:10px; color:var(--tx3); margin-bottom:5px; }
+.lv-meta em { color:var(--tx2); font-style:italic; }
+.lv-kws { display:flex; flex-wrap:wrap; gap:3px; }
 
 /* Right panel */
 #rp { position:fixed; right:0; top:0; bottom:0; width:370px; background:var(--bg2); border-left:1px solid var(--bd); transform:translateX(100%); transition:transform .28s cubic-bezier(.4,0,.2,1); z-index:50; overflow-y:auto; scrollbar-width:thin; scrollbar-color:var(--bd) transparent; }
@@ -100,7 +122,12 @@ svg { width:100%; height:100%; display:block; }
 <div id="sb">
   <div class="sb-hd">
     <h1>Literature Graph</h1>
-    <p>3DGS × 樹木配置最適化 関連研究マップ</p>
+    <p>関連研究マップ</p>
+  </div>
+
+  <div class="vt">
+    <button class="vt-btn active" id="btn-graph" onclick="switchView('graph')">⬡ Graph</button>
+    <button class="vt-btn" id="btn-list" onclick="switchView('list')">☰ List</button>
   </div>
 
   <div>
@@ -153,6 +180,7 @@ svg { width:100%; height:100%; display:block; }
 </div>
 
 <div id="gc"><svg id="gs"></svg></div>
+<div id="lv"><div id="lv-inner"></div></div>
 
 <div id="rp"><div id="rpi">
   <button id="rp-close">&#x2715;</button>
@@ -9216,15 +9244,15 @@ svg { width:100%; height:100%; display:block; }
     }
   },
   "this_study_kws": [
+    "遺伝的アルゴリズム",
     "デジタルツイン",
-    "樹木配置",
     "3D Gaussian Splatting",
-    "緑視率",
+    "樹木配置",
     "CLIP",
-    "遺伝的アルゴリズム"
+    "緑視率"
   ],
   "meta": {
-    "generated": "2026-04-06",
+    "generated": "2026-04-07",
     "total_papers": 93,
     "total_kws": 318,
     "rare_kws": 265,
@@ -9271,7 +9299,8 @@ function hexPoints(r){
 // ── state ──────────────────────────────────────────────────────────────────
 const st={
   secs:new Set(['A','B','C','D','F','G']),
-  showRare:true, showPapers:true, showJournals:true, hlThis:true, q:''
+  showRare:true, showPapers:true, showJournals:true, hlThis:true, q:'',
+  view:'graph'
 };
 
 // ── svg ────────────────────────────────────────────────────────────────────
@@ -9518,7 +9547,54 @@ function rebuildGraph(){
     .alphaDecay(0.013)
     .on('tick',tick);
 
-  applyKKVis();
+  if(st.view==='list') renderList();
+}
+
+// ── list view ──────────────────────────────────────────────────────────────
+function switchView(v){
+  st.view=v;
+  document.getElementById('gc').style.display=v==='graph'?'':'none';
+  document.getElementById('lv').style.display=v==='list'?'':'none';
+  document.getElementById('btn-graph').classList.toggle('active',v==='graph');
+  document.getElementById('btn-list').classList.toggle('active',v==='list');
+  if(v==='list') renderList();
+  else if(sim) sim.alpha(0.1).restart();
+}
+window.switchView=switchView;
+
+function renderList(){
+  const q=st.q.toLowerCase();
+  const filtered=PA_NODES.filter(p=>{
+    if(!st.secs.has(p.group)) return false;
+    if(q) return p.title.toLowerCase().includes(q)||
+                  p.author.toLowerCase().includes(q)||
+                  p.keywords.some(k=>k.toLowerCase().includes(q));
+    return true;
+  });
+
+  const bySection={};
+  SEC_DEF.forEach(s=>{ bySection[s.id]=[]; });
+  filtered.forEach(p=>{ (bySection[p.group]||(bySection[p.group]=[])).push(p); });
+
+  let html='';
+  SEC_DEF.forEach(s=>{
+    const ps=(bySection[s.id]||[]).sort((a,b)=>a.no-b.no);
+    if(!ps.length) return;
+    html+=`<div class="lv-sec">
+      <div class="lv-sec-hd" style="color:${COL[s.id]}">${s.ja}<span class="lv-cnt">${ps.length}本</span></div>
+      ${ps.map(p=>`
+        <div class="lv-row${p.myPaper?' lv-mine':''}" onclick="showPaperDetail('${p.id}',null)">
+          <div class="lv-no">${p.no}</div>
+          <div class="lv-body">
+            <div class="lv-ttl${p.myPaper?' lv-mine':''}">${p.title}</div>
+            <div class="lv-meta">${p.author} · ${p.year} · <em>${p.journal||''}</em></div>
+            <div class="lv-kws">${p.keywords.map(k=>`<span class="kc">${k}</span>`).join('')}</div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+  });
+  document.getElementById('lv-inner').innerHTML=html||
+    '<div style="color:var(--tx3);padding:60px;text-align:center">該当する論文がありません</div>';
 }
 
 // ── tick ───────────────────────────────────────────────────────────────────
