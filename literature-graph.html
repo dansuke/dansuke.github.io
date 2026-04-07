@@ -9261,12 +9261,12 @@ svg { width:100%; height:100%; display:block; }
     }
   },
   "this_study_kws": [
-    "緑視率",
-    "CLIP",
     "3D Gaussian Splatting",
-    "樹木配置",
+    "デジタルツイン",
+    "CLIP",
+    "緑視率",
     "遺伝的アルゴリズム",
-    "デジタルツイン"
+    "樹木配置"
   ],
   "meta": {
     "generated": "2026-04-07",
@@ -9616,11 +9616,16 @@ function renderList(){
 
 function lvFilterKw(el, kw){
   const inp=document.getElementById('q');
-  // toggle: if same kw is already active, clear it
-  if(st.q===kw.toLowerCase()){
+  const active=st.q===kw.toLowerCase();
+  // toggle: click same kw again → clear filter and close panel
+  if(active){
     st.q=''; inp.value='';
+    closePanel();
   } else {
     st.q=kw.toLowerCase(); inp.value=kw;
+    // open right panel with this keyword's paper list
+    const kwNode=KW_NODES.find(n=>n.label===kw);
+    if(kwNode) showKwPanel(kwNode);
   }
   renderList();
   // highlight active kw tags
